@@ -73,7 +73,7 @@ export function CommandPalette() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[420px] p-0 gap-0 glass border-border/40 overflow-hidden rounded-2xl shadow-2xl">
+      <DialogContent showCloseButton={false} className="sm:max-w-[420px] p-0 gap-0 glass border-border/40 overflow-hidden rounded-2xl shadow-2xl">
         <DialogTitle className="sr-only">Ricerca rapida</DialogTitle>
 
         {/* Search input */}
@@ -87,9 +87,13 @@ export function CommandPalette() {
             placeholder="Dove vuoi andare?"
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 min-w-0"
           />
-          <kbd className="hidden sm:flex h-5 items-center rounded-md border border-border/30 bg-muted/30 px-1.5 text-[10px] font-mono text-muted-foreground/50 shrink-0">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="hidden sm:flex h-5 items-center rounded-md border border-border/30 bg-muted/30 px-1.5 text-[10px] font-mono text-muted-foreground/50 shrink-0 hover:bg-muted/50 hover:text-muted-foreground transition-colors cursor-pointer"
+          >
             ESC
-          </kbd>
+          </button>
         </div>
 
         {/* Results */}

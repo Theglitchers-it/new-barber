@@ -47,6 +47,13 @@ model User {
   userChallenges      UserChallenge[]
   hairTimeline        HairTimelineEntry[]
   beautyReminders     BeautyReminder[]
+  feedLikes           FeedLike[]
+  feedSaves           FeedSave[]
+  feedComments        FeedComment[]
+  referralsSent       Referral[]     @relation("ReferralsSent")
+  referralsReceived   Referral[]     @relation("ReferralsReceived")
+  referralCode        String?        @unique
+  walkInEntries       WalkInQueue[]
 }
 
 model Account {
@@ -104,6 +111,8 @@ model Service {
   waitlistEntries   WaitlistEntry[]
   portfolioItems    OperatorPortfolio[]
   beautyReminders   BeautyReminder[]
+  feedPosts         FeedPost[]
+  walkInEntries     WalkInQueue[]
 
   @@index([active, category])
 }
@@ -129,6 +138,7 @@ model Operator {
   appointments   Appointment[]
   reviews        Review[]
   portfolio      OperatorPortfolio[]
+  feedPosts      FeedPost[]
 
   @@index([active])
 }
@@ -442,6 +452,111 @@ model OperatorPortfolio {
 
   @@index([operatorId, createdAt])
   @@index([published, createdAt])
+}
+
+// ============ SOCIAL FEED ============
+
+model FeedPost {
+  id          String   @id @default(cuid())
+  operatorId  String
+  image       String
+  beforeImage String?
+  caption     String?
+  serviceId   String?
+  tags        String?  // comma-separated: "taglio,uomo,fade"
+  published   Boolean  @default(true)
+  likesCount  Int      @default(0)
+  savesCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  operator Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  service  Service?  @relation(fields: [serviceId], references: [id])
+  likes    FeedLike[]
+  saves    FeedSave[]
+  comments FeedComment[]
+
+  @@index([published, createdAt])
+  @@index([operatorId, createdAt])
+}
+
+model FeedLike {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+model FeedSave {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+model FeedComment {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  text      String
+  createdAt DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+}
+
+// ============ REFERRAL ============
+
+model Referral {
+  id           String    @id @default(cuid())
+  referrerId   String
+  referredId   String?
+  code         String    @unique
+  status       String    @default("PENDING") // PENDING | COMPLETED | EXPIRED
+  rewardPoints Int       @default(100)
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  referrer User  @relation("ReferralsSent", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User? @relation("ReferralsReceived", fields: [referredId], references: [id])
+
+  @@index([referrerId, status])
+  @@index([code])
+}
+
+// ============ WALK-IN QUEUE ============
+
+model WalkInQueue {
+  id            String    @id @default(cuid())
+  customerName  String
+  userId        String?
+  phone         String?
+  serviceId     String?
+  estimatedWait Int       @default(0) // minuti
+  position      Int       @default(0)
+  status        String    @default("WAITING") // WAITING | SERVING | COMPLETED | LEFT
+  calledAt      DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id])
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([status, createdAt])
 }
 
 // ============ BEAUTY CALENDAR ============

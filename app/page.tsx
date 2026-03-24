@@ -36,7 +36,7 @@ import { FAQSection } from "@/components/landing/faq-section"
 import { ParallaxHero } from "@/components/landing/parallax-hero"
 import { BeforeAfterSlider } from "@/components/ui/before-after-slider"
 
-export const revalidate = 60
+export const dynamic = "force-dynamic"
 
 export default async function LandingPage() {
   const [settings, popularServices, allServices, operators, reviews, products] =

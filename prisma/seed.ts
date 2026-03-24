@@ -5,6 +5,12 @@ const prisma = new PrismaClient()
 
 async function main() {
   // Pulisci database
+  await prisma.feedComment.deleteMany()
+  await prisma.feedLike.deleteMany()
+  await prisma.feedSave.deleteMany()
+  await prisma.feedPost.deleteMany()
+  await prisma.referral.deleteMany()
+  await prisma.walkInQueue.deleteMany()
   await prisma.notification.deleteMany()
   await prisma.loyaltyTransaction.deleteMany()
   await prisma.review.deleteMany()
@@ -733,6 +739,134 @@ async function main() {
         link: "/prenotazioni",
       },
     }),
+  ])
+
+  // Feed Posts
+  const feedPosts = await Promise.all([
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[0].id,
+        image: "https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&h=750&fit=crop",
+        beforeImage: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=600&h=750&fit=crop",
+        caption: "Trasformazione incredibile! Da capelli piatti a un bob voluminoso con onde morbide. La cliente era felicissima del risultato!",
+        serviceId: servizi[0].id,
+        tags: "taglio,donna,bob,styling",
+        likesCount: 24,
+        savesCount: 8,
+      },
+    }),
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[1].id,
+        image: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&h=750&fit=crop",
+        beforeImage: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&h=750&fit=crop",
+        caption: "Fade perfetto con design laterale. Quando la precisione incontra la creatività!",
+        serviceId: servizi[1].id,
+        tags: "taglio,uomo,fade,barba",
+        likesCount: 42,
+        savesCount: 15,
+      },
+    }),
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[2].id,
+        image: "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=600&h=750&fit=crop",
+        beforeImage: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=750&fit=crop",
+        caption: "Balayage miele su base castana. Il segreto? Sfumature che seguono la naturale caduta dei capelli.",
+        serviceId: servizi[4].id,
+        tags: "colore,balayage,donna,styling",
+        likesCount: 67,
+        savesCount: 28,
+      },
+    }),
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[0].id,
+        image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=750&fit=crop",
+        caption: "Piega elegante per un evento speciale. A volte la semplicità è la forma più alta di sofisticazione.",
+        serviceId: servizi[2].id,
+        tags: "piega,donna,styling,elegante",
+        likesCount: 31,
+        savesCount: 12,
+      },
+    }),
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[3].id,
+        image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&h=750&fit=crop",
+        beforeImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop",
+        caption: "Taglio moderno con texture. Il look perfetto per chi vuole stile senza troppo impegno nella manutenzione.",
+        serviceId: servizi[1].id,
+        tags: "taglio,uomo,texture,moderno",
+        likesCount: 19,
+        savesCount: 5,
+      },
+    }),
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[2].id,
+        image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&h=750&fit=crop",
+        caption: "Colore rosso rame vibrante! Perfetto per la primavera. Chi osa, vince sempre.",
+        serviceId: servizi[3].id,
+        tags: "colore,donna,rame,primavera",
+        likesCount: 55,
+        savesCount: 22,
+      },
+    }),
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[1].id,
+        image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&h=750&fit=crop",
+        caption: "Barba curata e definita. Il dettaglio che fa la differenza nel look maschile.",
+        tags: "barba,uomo,grooming,dettaglio",
+        likesCount: 38,
+        savesCount: 9,
+      },
+    }),
+    prisma.feedPost.create({
+      data: {
+        operatorId: operatori[0].id,
+        image: "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&h=750&fit=crop",
+        beforeImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=750&fit=crop",
+        caption: "Da lunghissimi a pixie cut! Serve coraggio ma il risultato parla da solo.",
+        serviceId: servizi[0].id,
+        tags: "taglio,donna,pixie,trasformazione",
+        likesCount: 89,
+        savesCount: 34,
+      },
+    }),
+  ])
+
+  // Add some likes from clients
+  await Promise.all([
+    prisma.feedLike.create({ data: { userId: maria.id, postId: feedPosts[0].id } }),
+    prisma.feedLike.create({ data: { userId: maria.id, postId: feedPosts[2].id } }),
+    prisma.feedLike.create({ data: { userId: maria.id, postId: feedPosts[5].id } }),
+    prisma.feedLike.create({ data: { userId: luca.id, postId: feedPosts[1].id } }),
+    prisma.feedLike.create({ data: { userId: luca.id, postId: feedPosts[4].id } }),
+    prisma.feedLike.create({ data: { userId: elena.id, postId: feedPosts[2].id } }),
+    prisma.feedLike.create({ data: { userId: elena.id, postId: feedPosts[7].id } }),
+  ])
+
+  // Add some saves
+  await Promise.all([
+    prisma.feedSave.create({ data: { userId: maria.id, postId: feedPosts[2].id } }),
+    prisma.feedSave.create({ data: { userId: elena.id, postId: feedPosts[5].id } }),
+  ])
+
+  // Add some comments
+  await Promise.all([
+    prisma.feedComment.create({ data: { userId: maria.id, postId: feedPosts[2].id, text: "Che bel colore! Lo voglio anche io!" } }),
+    prisma.feedComment.create({ data: { userId: elena.id, postId: feedPosts[0].id, text: "Bellissimo taglio, Giulia sei bravissima!" } }),
+    prisma.feedComment.create({ data: { userId: luca.id, postId: feedPosts[1].id, text: "Fade perfetto come sempre Marco!" } }),
+    prisma.feedComment.create({ data: { userId: maria.id, postId: feedPosts[7].id, text: "Wow che coraggio! Ma il risultato è pazzesco!" } }),
+  ])
+
+  // Generate referral codes for existing users
+  await Promise.all([
+    prisma.user.update({ where: { id: maria.id }, data: { referralCode: "MARIA2026" } }),
+    prisma.user.update({ where: { id: luca.id }, data: { referralCode: "LUCA2026" } }),
+    prisma.user.update({ where: { id: elena.id }, data: { referralCode: "ELENA2026" } }),
   ])
 
   console.log("Seed completato!")

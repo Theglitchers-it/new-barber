@@ -46,6 +46,19 @@ export const WAITLIST_STATUS = {
   EXPIRED: "EXPIRED",
 } as const
 
+export const REFERRAL_STATUS = {
+  PENDING: "PENDING",
+  COMPLETED: "COMPLETED",
+  EXPIRED: "EXPIRED",
+} as const
+
+export const WALKIN_STATUS = {
+  WAITING: "WAITING",
+  SERVING: "SERVING",
+  COMPLETED: "COMPLETED",
+  LEFT: "LEFT",
+} as const
+
 // ============ LOYALTY TIERS ============
 
 export const LOYALTY_TIER = {

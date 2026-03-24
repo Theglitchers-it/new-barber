@@ -55,6 +55,21 @@ export const orderLimiter = createRateLimiter({ interval: 60_000, maxTokens: 500
 // 20 richieste per 60 secondi per IP (image proxy)
 export const proxyLimiter = createRateLimiter({ interval: 60_000, maxTokens: 1000 })
 
+// 10 post per 60 secondi per userId (feed post creation)
+export const feedPostLimiter = createRateLimiter({ interval: 60_000, maxTokens: 500 })
+
+// 30 like per 60 secondi per userId (feed likes)
+export const feedLikeLimiter = createRateLimiter({ interval: 60_000, maxTokens: 500 })
+
+// 30 save per 60 secondi per userId (feed saves)
+export const feedSaveLimiter = createRateLimiter({ interval: 60_000, maxTokens: 500 })
+
+// 15 commenti per 60 secondi per userId (feed comments)
+export const feedCommentLimiter = createRateLimiter({ interval: 60_000, maxTokens: 500 })
+
+// 5 riscatti referral per 60 secondi per userId
+export const referralRedeemLimiter = createRateLimiter({ interval: 60_000, maxTokens: 500 })
+
 export function getRateLimitResponse() {
   return new Response(
     JSON.stringify({ error: "Troppi tentativi. Riprova tra un minuto." }),

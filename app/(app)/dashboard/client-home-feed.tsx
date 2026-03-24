@@ -327,6 +327,22 @@ export async function ClientHomeFeed({ userId, userName }: { userId: string; use
       {/* Dal Tuo Salone Feed */}
       <SalonFeed />
 
+      {/* Referral Promo Card */}
+      <Link href="/referral" className="block">
+        <Card className="overflow-hidden border-0 hover-lift cursor-pointer">
+          <div className="gradient-primary p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+              <Gift className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 text-white">
+              <p className="text-sm font-bold">Invita un amico, guadagna 100 punti!</p>
+              <p className="text-[10px] opacity-80">Condividi il tuo codice e ricevi punti bonus</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-white/70 shrink-0" />
+          </div>
+        </Card>
+      </Link>
+
       {/* 4. Prodotti suggeriti */}
       <SuggestedProducts products={suggestedProducts} />
 

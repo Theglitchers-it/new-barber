@@ -3,8 +3,9 @@ import { NextResponse } from "next/server"
 import { USER_ROLE } from "@/lib/constants"
 import type { SafeParseReturnType } from "zod"
 
-type Session = Awaited<ReturnType<typeof auth>>
-type AuthenticatedSession = NonNullable<Session> & { user: NonNullable<NonNullable<Session>["user"]> }
+// auth() returns Session | null when called without args (not as middleware)
+type Session = { user?: { id: string; name?: string | null; email?: string | null; role: string; image?: string | null } | null } | null
+type AuthenticatedSession = { user: { id: string; name?: string | null; email?: string | null; role: string; image?: string | null } }
 type AuthResult =
   | { session: AuthenticatedSession; error?: never }
   | { session?: never; error: NextResponse }

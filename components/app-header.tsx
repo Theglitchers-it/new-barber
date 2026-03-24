@@ -40,19 +40,26 @@ export function AppHeader() {
             <Menu className="w-5 h-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 sm:w-72 p-0 glass-gradient">
+        <SheetContent side="left" showCloseButton={false} className="w-64 sm:w-72 p-0 glass-gradient">
           <SheetTitle className="sr-only">Menu di navigazione</SheetTitle>
           <div className="p-5 border-b border-border/30">
             <div className="flex items-center gap-3">
-              <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/25">
+              <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-1 min-w-0">
+                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/25 shrink-0">
                   <Scissors className="w-5 h-5 text-white" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h1 className="font-heading text-lg font-bold tracking-tight gradient-text">SalonPro</h1>
                   <p className="text-xs text-muted-foreground">Il tuo salone</p>
                 </div>
               </Link>
+              <button
+                onClick={() => setOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-accent/10 hover:text-foreground transition-all shrink-0"
+                aria-label="Chiudi menu"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
             </div>
           </div>
           <nav className="p-3">
