@@ -1,0 +1,24 @@
+{
+  "name": "SalonPro - Gestione Salone",
+  "short_name": "SalonPro",
+  "description": "Prenota appuntamenti, gestisci il tuo salone di bellezza",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f8f8fa",
+  "theme_color": "#c83232",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

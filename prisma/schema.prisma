@@ -1,0 +1,464 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ AUTH (NextAuth) ============
+
+model User {
+  id               String    @id @default(cuid())
+  name             String?
+  email            String    @unique
+  emailVerified    DateTime?
+  image            String?
+  hashedPassword   String?
+  role             String    @default("CLIENT") // ADMIN | CLIENT
+  phone            String?
+  loyaltyPoints    Int       @default(0)
+  loyaltyTier      String    @default("BRONZE") // BRONZE | SILVER | GOLD | PLATINUM
+  totalPointsEarned Int      @default(0)
+  hairType         String?
+  preferredContact String?   // EMAIL | PHONE | WHATSAPP
+  notes            String?
+  lastVisit        DateTime?
+  totalSpent       Float     @default(0)
+  avatar           String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  currentStreak    Int       @default(0)
+  longestStreak    Int       @default(0)
+  lastStreakDate   DateTime?
+
+  accounts            Account[]
+  sessions            Session[]
+  appointments        Appointment[]
+  orders              Order[]
+  cartItems           CartItem[]
+  reviews             Review[]
+  loyaltyTransactions LoyaltyTransaction[]
+  notifications       Notification[]
+  waitlistEntries     WaitlistEntry[]
+  wishlistItems       Wishlist[]
+  userChallenges      UserChallenge[]
+  hairTimeline        HairTimelineEntry[]
+  beautyReminders     BeautyReminder[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============ BUSINESS ============
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  duration    Int      // minuti
+  category    String
+  image       String?
+  popular     Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments      Appointment[]
+  waitlistEntries   WaitlistEntry[]
+  portfolioItems    OperatorPortfolio[]
+  beautyReminders   BeautyReminder[]
+
+  @@index([active, category])
+}
+
+model Operator {
+  id              String    @id @default(cuid())
+  name            String
+  role            String    // es. "Senior Stylist"
+  specializations String?   // comma-separated
+  image           String?
+  email           String?
+  phone           String?
+  bio             String?
+  rating          Float     @default(0)
+  reviewCount     Int       @default(0)
+  commission      Float?    // percentuale commissione
+  hireDate        DateTime?
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  availabilities OperatorAvailability[]
+  appointments   Appointment[]
+  reviews        Review[]
+  portfolio      OperatorPortfolio[]
+
+  @@index([active])
+}
+
+model OperatorAvailability {
+  id         String @id @default(cuid())
+  operatorId String
+  dayOfWeek  Int    // 0=domenica, 1=lunedi, ..., 6=sabato
+  startTime  String // "HH:mm"
+  endTime    String // "HH:mm"
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@unique([operatorId, dayOfWeek])
+}
+
+model Appointment {
+  id                 String    @id @default(cuid())
+  userId             String
+  serviceId          String
+  operatorId         String
+  date               DateTime
+  startTime          String    // "HH:mm"
+  endTime            String    // "HH:mm"
+  status             String    @default("PENDING") // PENDING | CONFIRMED | IN_PROGRESS | COMPLETED | CANCELLED
+  totalPrice         Float
+  notes              String?
+  cancellationReason String?
+  cancelledAt        DateTime?
+  noShow             Boolean   @default(false)
+  deposit            Float?
+  staffNotes         String?
+  reminderSent       Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  service  Service  @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  review   Review?
+  loyaltyTransactions LoyaltyTransaction[]
+
+  @@index([userId, date, status])
+  @@index([operatorId, date, status])
+  @@index([operatorId, status])
+  @@index([date, status])
+}
+
+// ============ SHOP ============
+
+model Product {
+  id            String  @id @default(cuid())
+  name          String
+  description   String?
+  category      String
+  price         Float
+  originalPrice Float?
+  stock         Int     @default(0)
+  image         String?
+  rating        Float   @default(0)
+  reviewCount   Int     @default(0)
+  active        Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  wishlistItems Wishlist[]
+
+  @@index([active, category])
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  userId    String
+  status    String   @default("PENDING") // PENDING | PROCESSING | SHIPPED | DELIVERED | CANCELLED
+  total     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user                User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items               OrderItem[]
+  loyaltyTransactions LoyaltyTransaction[]
+
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int    @default(1)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+// ============ REVIEWS ============
+
+model Review {
+  id            String    @id @default(cuid())
+  userId        String
+  operatorId    String
+  appointmentId String    @unique
+  rating        Int       // 1-5
+  comment       String?
+  reply         String?
+  replyDate     DateTime?
+  visible       Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  operator    Operator    @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  @@index([operatorId, visible])
+  @@index([userId, createdAt])
+}
+
+// ============ LOYALTY ============
+
+model LoyaltyTransaction {
+  id            String  @id @default(cuid())
+  userId        String
+  points        Int     // positivo = guadagnati, negativo = spesi
+  type          String  // EARNED | REDEEMED
+  reason        String  // es. "Appuntamento completato", "Sconto fedeltà"
+  appointmentId String?
+  orderId       String?
+  createdAt     DateTime @default(now())
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  order       Order?       @relation(fields: [orderId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+// ============ BUSINESS ============
+
+model BusinessSettings {
+  id                    String  @id @default("default")
+  salonName             String  @default("SalonPro")
+  address               String?
+  phone                 String?
+  email                 String?
+  openTime              String  @default("09:00")
+  closeTime             String  @default("19:00")
+  slotDuration          Int     @default(30) // minuti
+  loyaltyPointsPerEuro  Float   @default(1)
+  loyaltyRedemptionRate Float   @default(0.1) // 1 punto = 0.10€
+  cancellationPolicy    String?
+  depositRequired       Boolean @default(false)
+  depositAmount         Float   @default(0)
+  logo                  String?
+  coverImage            String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Coupon {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  type      String    // PERCENTAGE | FIXED
+  value     Float     // percentuale o importo fisso
+  minOrder  Float     @default(0)
+  maxUses   Int?
+  usedCount Int       @default(0)
+  expiresAt DateTime?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// ============ NOTIFICATIONS ============
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // APPOINTMENT | ORDER | LOYALTY | SYSTEM
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+}
+
+// ============ WAITLIST ============
+
+model WaitlistEntry {
+  id          String    @id @default(cuid())
+  userId      String
+  serviceId   String
+  operatorId  String?
+  date        DateTime
+  startTime   String?
+  status      String    @default("WAITING") // WAITING | NOTIFIED | BOOKED | EXPIRED
+  notifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@index([date, status])
+  @@index([userId, status])
+}
+
+// ============ WISHLIST ============
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+// ============ CHALLENGES / GAMIFICATION ============
+
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String   // VISITS | SPENDING | REVIEWS | PRODUCTS
+  target      Int
+  reward      Int      // punti premio
+  startDate   DateTime
+  endDate     DateTime
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  userChallenges UserChallenge[]
+
+  @@index([active, endDate])
+}
+
+model UserChallenge {
+  id          String    @id @default(cuid())
+  userId      String
+  challengeId String
+  progress    Int       @default(0)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
+  @@index([userId, completed])
+}
+
+// ============ HAIR TIMELINE ============
+
+model HairTimelineEntry {
+  id            String   @id @default(cuid())
+  userId        String
+  appointmentId String?
+  beforePhoto   String?
+  afterPhoto    String?
+  service       String   // snapshot del nome servizio
+  operator      String   // snapshot del nome operatore
+  notes         String?
+  colorFormula  String?
+  productsUsed  String?  // comma-separated
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// ============ OPERATOR PORTFOLIO ============
+
+model OperatorPortfolio {
+  id          String   @id @default(cuid())
+  operatorId  String
+  beforeImage String?
+  afterImage  String
+  caption     String?
+  serviceId   String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  service  Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([operatorId, createdAt])
+  @@index([published, createdAt])
+}
+
+// ============ BEAUTY CALENDAR ============
+
+model BeautyReminder {
+  id              String    @id @default(cuid())
+  userId          String
+  title           String
+  serviceId       String?
+  suggestedDate   DateTime
+  intervalDays    Int       @default(30)
+  lastCompletedAt DateTime?
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([userId, active, suggestedDate])
+}
