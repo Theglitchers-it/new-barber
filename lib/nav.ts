@@ -10,6 +10,7 @@ import {
   UserCircle,
   Scissors,
   CalendarHeart,
+  FileBarChart,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -30,7 +31,8 @@ export const navItems: NavItem[] = [
   { href: "/shop", icon: ShoppingBag, label: "Shop" },
   { href: "/ordini", icon: Package, label: "Ordini" },
   { href: "/fedelta", icon: Gift, label: "Fedeltà" },
-  { href: "/timeline", icon: Scissors, label: "I Miei Capelli", clientOnly: true },
+  { href: "/report", icon: FileBarChart, label: "Report", adminOnly: true },
+  { href: "/timeline", icon: Scissors, label: "Timeline", clientOnly: true },
   { href: "/calendario", icon: CalendarHeart, label: "Calendario", clientOnly: true },
   { href: "/profilo", icon: UserCircle, label: "Profilo", clientOnly: true },
 ]

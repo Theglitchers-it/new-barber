@@ -124,7 +124,7 @@ export default function RecensioniPage() {
   return (
     <div className="space-y-4 animate-slide-up">
       <div>
-        <h1 className="text-3xl font-heading font-extrabold gradient-text">
+        <h1 className="text-2xl sm:text-3xl font-heading font-extrabold gradient-text">
           Recensioni
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -134,17 +134,17 @@ export default function RecensioniPage() {
 
       {/* Statistiche */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
           <Card className="glass">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br gradient-primary text-white">
-                  <Star className="w-6 h-6" />
+            <CardContent className="p-3 sm:pt-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-br gradient-primary text-white shrink-0">
+                  <Star className="w-4 h-4 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Media</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">{stats.average}</span>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Media</p>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xl sm:text-2xl font-bold">{stats.average}</span>
                     <StarRating rating={stats.average} size="sm" />
                   </div>
                 </div>
@@ -153,28 +153,28 @@ export default function RecensioniPage() {
           </Card>
 
           <Card className="glass">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-secondary to-secondary/70 text-white">
-                  <MessageSquare className="w-6 h-6" />
+            <CardContent className="p-3 sm:pt-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-secondary to-secondary/70 text-white shrink-0">
+                  <MessageSquare className="w-4 h-4 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Totale recensioni</p>
-                  <span className="text-2xl font-bold">{stats.total}</span>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Totale</p>
+                  <span className="text-xl sm:text-2xl font-bold">{stats.total}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="glass">
-            <CardContent className="pt-6">
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground font-medium">Distribuzione</p>
+          <Card className="glass col-span-2 md:col-span-1">
+            <CardContent className="p-3 sm:pt-6">
+              <div className="space-y-1.5 sm:space-y-2">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Distribuzione</p>
                 {[5, 4, 3, 2, 1].map((star) => (
-                  <div key={star} className="flex items-center gap-2 text-sm">
+                  <div key={star} className="flex items-center gap-1.5 sm:gap-2 text-sm">
                     <span className="w-3">{star}</span>
                     <Star className="w-3 h-3 fill-primary text-primary" />
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r gradient-primary rounded-full transition-all"
                         style={{
@@ -184,7 +184,7 @@ export default function RecensioniPage() {
                         }}
                       />
                     </div>
-                    <span className="w-6 text-right text-muted-foreground">
+                    <span className="w-6 text-right text-xs text-muted-foreground">
                       {stats.distribution[star]}
                     </span>
                   </div>

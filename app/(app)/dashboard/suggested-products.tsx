@@ -98,7 +98,7 @@ export function SuggestedProducts({ products }: { products: SuggestedProduct[] }
           </Link>
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
         {products.map((product) => {
           const isWished = wishlist.has(product.id)
           return (

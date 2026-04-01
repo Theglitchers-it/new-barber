@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
@@ -14,21 +13,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useNotifications } from "@/components/client/notification-provider"
 
 export function ClientSlimSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { resolvedTheme, setTheme } = useTheme()
-  const [unreadCount, setUnreadCount] = useState(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch("/api/notifications?unread=true", { signal: controller.signal })
-      .then((r) => r.ok ? r.json() : { count: 0 })
-      .then((d) => setUnreadCount(d.count || 0))
-      .catch(() => {})
-    return () => controller.abort()
-  }, [pathname])
+  const { unreadCount } = useNotifications()
 
   const initial = session?.user?.name?.[0]?.toUpperCase() || "C"
 
@@ -100,13 +91,15 @@ export function ClientSlimSidebar() {
             <TooltipTrigger asChild>
               <button
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-all duration-300"
+                aria-label="Cambia tema"
+                className="relative flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-all duration-300"
               >
-                {resolvedTheme === "dark" ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
+                <Sun className="w-4.5 h-4.5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute w-4.5 h-4.5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8}>
-              {resolvedTheme === "dark" ? "Modalità chiara" : "Modalità scura"}
+              Cambia tema
             </TooltipContent>
           </Tooltip>
 

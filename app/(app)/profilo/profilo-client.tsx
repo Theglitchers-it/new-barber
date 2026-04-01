@@ -122,6 +122,14 @@ type ProfileStats = {
     appointment: { date: string; service: { name: string } }
   }>
   favorites: { service: string | null; operator: string | null }
+  recommendedProducts: Array<{
+    id: string
+    name: string
+    price: number
+    originalPrice: number | null
+    image: string | null
+    category: string
+  }>
 }
 
 function getCountdown(dateStr: string): { label: string; number: string; unit: string; color: string } {
@@ -154,9 +162,9 @@ export function ProfiloClient({
   initialProfile,
 }: {
   initialData: ProfileStats
-  initialProfile: { preferredContact: string | null; notes: string | null }
+  initialProfile: { preferredContact: string | null; notes: string | null; birthDate: string | null }
 }) {
-  const { user, stats, nextAppointment, recentAppointments, recentOrders, loyalty, reviews, favorites } = initialData
+  const { user, stats, nextAppointment, recentAppointments, recentOrders, loyalty, reviews, favorites, recommendedProducts } = initialData
 
   useRevealOnScroll()
 
@@ -166,6 +174,7 @@ export function ProfiloClient({
   const [hairType, setHairType] = useState(user.hairType ?? "")
   const [preferredContact, setPreferredContact] = useState(initialProfile.preferredContact ?? "")
   const [notes, setNotes] = useState(initialProfile.notes ?? "")
+  const [birthDate, setBirthDate] = useState(initialProfile.birthDate ?? "")
   const [saving, setSaving] = useState(false)
 
   // Password state
@@ -188,7 +197,7 @@ export function ProfiloClient({
       const res = await fetch("/api/users/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, hairType, preferredContact, notes }),
+        body: JSON.stringify({ name, phone, hairType, preferredContact, notes, birthDate: birthDate || null }),
       })
       if (res.ok) {
         toast.success("Profilo aggiornato")
@@ -258,9 +267,9 @@ export function ProfiloClient({
     .slice(0, 5)
 
   return (
-    <div className="max-w-xl mx-auto pb-12 animate-fade-in">
+    <div className="max-w-2xl mx-auto pb-12 animate-fade-in">
       {/* ═══ HERO IMMERSIVO ═══ */}
-      <div className="relative rounded-3xl overflow-hidden px-6 pt-12 pb-8 text-center mb-6"
+      <div className="relative rounded-3xl overflow-hidden px-4 sm:px-6 pt-8 sm:pt-12 pb-6 sm:pb-8 text-center mb-4 sm:mb-6"
         style={{ background: `linear-gradient(135deg, ${tierConfig.color}12, ${tierConfig.color}04)` }}
       >
         {/* Decorative floating blobs */}
@@ -272,9 +281,9 @@ export function ProfiloClient({
         />
 
         {/* Avatar */}
-        <Avatar className="w-28 h-28 mx-auto ring-4 ring-background shadow-2xl animate-bounce-in">
+        <Avatar className="w-20 h-20 sm:w-28 sm:h-28 mx-auto ring-4 ring-background shadow-2xl animate-bounce-in">
           <AvatarFallback
-            className="text-4xl font-bold"
+            className="text-2xl sm:text-4xl font-bold"
             style={{ background: `linear-gradient(135deg, ${tierConfig.color}30, ${tierConfig.color}10)`, color: tierConfig.color }}
           >
             {initials}
@@ -282,7 +291,7 @@ export function ProfiloClient({
         </Avatar>
 
         {/* Name with shimmer */}
-        <h1 className="text-3xl font-heading font-bold mt-5 gradient-text-animated">
+        <h1 className="text-2xl sm:text-3xl font-heading font-bold mt-4 sm:mt-5 gradient-text-animated">
           Ciao, {firstName}
         </h1>
 
@@ -358,8 +367,8 @@ export function ProfiloClient({
       </div>
 
       {/* ═══ BENTO GRID ═══ */}
-      <div className="px-1 mb-8 reveal reveal-stagger">
-        <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3">
+      <div className="px-1 mb-6 sm:mb-8 reveal reveal-stagger">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
           {/* Il tuo stile */}
           <div className="reveal glass rounded-2xl p-4 space-y-2.5">
             <div className="flex items-center gap-2">
@@ -411,7 +420,7 @@ export function ProfiloClient({
 
           {/* Quick re-book CTA */}
           {favorites.operator && (
-            <Link href="/prenotazioni/nuova" className="col-span-1 min-[360px]:col-span-2">
+            <Link href="/prenotazioni/nuova" className="col-span-2 sm:col-span-4">
               <div className="reveal glass-gradient rounded-2xl p-4 flex items-center gap-4 hover-lift">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Scissors className="w-6 h-6 text-primary" />
@@ -426,6 +435,57 @@ export function ProfiloClient({
           )}
         </div>
       </div>
+
+      {/* ═══ PER TE — PRODOTTI CONSIGLIATI ═══ */}
+      {recommendedProducts.length > 0 && (
+        <div className="px-1 mb-6 sm:mb-8 reveal">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-heading font-semibold gradient-text">Per te</h2>
+            <Link href="/shop">
+              <Button variant="ghost" size="sm" className="text-xs text-primary">
+                Vedi tutti <ArrowRight className="w-3 h-3 ml-1" />
+              </Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {recommendedProducts.map((product) => (
+              <Link key={product.id} href={`/shop/${product.id}`}>
+                <div className="glass rounded-2xl overflow-hidden hover-lift group">
+                  <div className="aspect-square bg-muted relative overflow-hidden">
+                    {product.image && product.image !== "/placeholder.jpg" ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 gradient-bg-subtle flex items-center justify-center">
+                        <ShoppingBag className="w-8 h-8 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    {product.originalPrice && (
+                      <span className="absolute top-1.5 left-1.5 gradient-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+                        -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-2.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{product.category}</p>
+                    <p className="text-sm font-semibold mt-0.5 line-clamp-1">{product.name}</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="text-sm font-bold gradient-text">&euro;{product.price.toFixed(2)}</span>
+                      {product.originalPrice && (
+                        <span className="text-[10px] text-muted-foreground line-through">&euro;{product.originalPrice.toFixed(2)}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ═══ TIMELINE — LA TUA STORIA ═══ */}
       {recentActivity.length > 0 && (
@@ -446,7 +506,7 @@ export function ProfiloClient({
                     }`} />
 
                     {/* Event card */}
-                    <div className="glass-subtle rounded-xl p-3.5 hover:bg-muted/30 transition-colors">
+                    <div className="glass-subtle rounded-2xl p-3.5 hover:bg-muted/30 transition-colors">
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
@@ -493,12 +553,12 @@ export function ProfiloClient({
 
       {/* ═══ RECENSIONI — LE TUE PAROLE ═══ */}
       {reviews.length > 0 && (
-        <div className="mb-8 reveal">
-          <h2 className="text-lg font-heading font-semibold mb-4 px-1">Le tue parole</h2>
+        <div className="px-1 mb-6 sm:mb-8 reveal">
+          <h2 className="text-lg font-heading font-semibold mb-3 sm:mb-4">Le tue parole</h2>
 
-          <div className="scroll-snap-x gap-3 -mx-4 px-4 pb-2">
-            {reviews.slice(0, 5).map((review) => (
-              <div key={review.id} className="w-[280px] glass rounded-2xl p-5 space-y-3 shrink-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            {reviews.slice(0, 4).map((review) => (
+              <div key={review.id} className="glass rounded-2xl p-4 sm:p-5 space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between">
                   <StarRating rating={review.rating} size="sm" />
                   <span className="text-xs text-muted-foreground">
@@ -526,18 +586,16 @@ export function ProfiloClient({
       )}
 
       {/* ═══ MODIFICA PROFILO — BOTTOM SHEET ═══ */}
-      <div className="reveal text-center pt-4 pb-4 px-1">
-        <div className="divider-gradient mb-6" />
-
+      <div className="reveal px-1 pb-4">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" className="rounded-2xl gap-2 text-muted-foreground hover:text-foreground">
+            <Button variant="outline" className="w-full rounded-2xl gap-2 h-12 text-muted-foreground hover:text-foreground border-border/30">
               <Settings className="w-4 h-4" />
               Modifica profilo
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-6 pb-8">
+          <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
             <SheetHeader>
               <SheetTitle className="font-heading text-lg">Il tuo profilo</SheetTitle>
               <SheetDescription>Gestisci le tue informazioni personali</SheetDescription>
@@ -581,6 +639,17 @@ export function ProfiloClient({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="birthDate" className="text-xs">Data di nascita</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="rounded-xl"
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -632,7 +701,7 @@ export function ProfiloClient({
                   </DialogContent>
                 </Dialog>
 
-                <Button onClick={handleSaveProfile} disabled={saving} className="rounded-xl btn-gradient gap-2">
+                <Button onClick={handleSaveProfile} disabled={saving} className="rounded-xl btn-gradient gap-2 w-full sm:w-auto min-h-[44px]">
                   <Save className="w-4 h-4" />
                   {saving ? "Salvataggio..." : "Salva modifiche"}
                 </Button>

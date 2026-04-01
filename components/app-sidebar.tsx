@@ -7,27 +7,20 @@ import { cn } from "@/lib/utils"
 import { navItems, filterNavItems } from "@/lib/nav"
 import { useTheme } from "next-themes"
 import { Scissors, LogOut, Sun, Moon, Search, Bell } from "lucide-react"
-import { useState, useEffect } from "react"
 import { USER_ROLE } from "@/lib/constants"
+import { useNotifications } from "@/components/client/notification-provider"
+import { useTranslation } from "@/lib/i18n/context"
 
 export function AppSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { resolvedTheme, setTheme } = useTheme()
+  const { t } = useTranslation()
   const isAdmin = session?.user?.role === USER_ROLE.ADMIN
   const profileHref = isAdmin ? "/impostazioni" : "/profilo"
 
   const filteredItems = filterNavItems(navItems, isAdmin)
-  const [unreadCount, setUnreadCount] = useState(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch("/api/notifications?unread=true", { signal: controller.signal })
-      .then((r) => r.ok ? r.json() : { count: 0 })
-      .then((d) => setUnreadCount(d.count || 0))
-      .catch(() => {})
-    return () => controller.abort()
-  }, [pathname])
+  const { unreadCount } = useNotifications()
 
   return (
     <aside className="hidden md:flex w-64 flex-col glass-gradient border-r-0 h-screen sticky top-0">
@@ -44,13 +37,7 @@ export function AppSidebar() {
             </div>
           </Link>
           <button
-            onClick={() => {
-              const isDark = document.documentElement.classList.contains("dark")
-              const next = isDark ? "light" : "dark"
-              setTheme(next)
-              document.documentElement.classList.toggle("dark", !isDark)
-              document.documentElement.style.colorScheme = next
-            }}
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="ml-auto relative w-9 h-9 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-accent/10 hover:text-foreground transition-all duration-300"
             title="Cambia tema"
           >
@@ -108,7 +95,7 @@ export function AppSidebar() {
                     "w-4 h-4 transition-transform duration-300",
                     !isActive && "group-hover:scale-110"
                   )} />
-                  {item.label}
+                  {t(item.label as never)}
                 </Link>
               </li>
             )

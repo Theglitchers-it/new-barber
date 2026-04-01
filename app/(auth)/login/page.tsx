@@ -12,9 +12,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Mail, Lock, LogIn } from "lucide-react"
 import Link from "next/link"
+import { useTranslation } from "@/lib/i18n/context"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -39,7 +41,7 @@ export default function LoginPage() {
 
     setLoading(false)
     if (result?.error) {
-      setError("Email o password non validi")
+      setError(t("auth.invalidCredentials"))
     } else {
       router.push("/dashboard")
     }
@@ -49,8 +51,8 @@ export default function LoginPage() {
     <Card className="glass glow-card border-0 shadow-2xl">
       <CardContent className="p-6 sm:p-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-heading font-extrabold">Bentornato!</h1>
-          <p className="text-muted-foreground text-sm mt-1">Accedi al tuo account</p>
+          <h1 className="text-2xl font-heading font-extrabold">{t("auth.welcomeBack")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t("auth.loginToAccount")}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 stagger-children">
@@ -61,7 +63,7 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs font-medium">Email</Label>
+            <Label htmlFor="email" className="text-xs font-medium">{t("auth.email")}</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -79,9 +81,9 @@ export default function LoginPage() {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-xs font-medium">Password</Label>
+              <Label htmlFor="password" className="text-xs font-medium">{t("auth.password")}</Label>
               <span className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-                Password dimenticata?
+                {t("auth.forgotPassword")}
               </span>
             </div>
             <div className="relative">
@@ -109,14 +111,14 @@ export default function LoginPage() {
             ) : (
               <LogIn className="w-4 h-4" />
             )}
-            {loading ? "Accesso in corso..." : "Accedi"}
+            {loading ? t("auth.loggingIn") : t("auth.login")}
           </button>
         </form>
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-5">
           <div className="flex-1 h-px bg-border/50" />
-          <span className="text-xs text-muted-foreground">oppure</span>
+          <span className="text-xs text-muted-foreground">{t("auth.or")}</span>
           <div className="flex-1 h-px bg-border/50" />
         </div>
 
@@ -132,13 +134,13 @@ export default function LoginPage() {
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
           </svg>
-          Continua con Google
+          {t("auth.continueWithGoogle")}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground mt-5">
-          Non hai un account?{" "}
+          {t("auth.noAccount")}{" "}
           <Link href="/registrati" className="text-primary hover:underline font-semibold">
-            Registrati gratis
+            {t("auth.signUpFree")}
           </Link>
         </p>
 

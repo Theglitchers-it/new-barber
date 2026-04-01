@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 
-const publicRoutes = ["/", "/login", "/registrati", "/api/auth", "/shop"]
+const publicRoutes = ["/", "/login", "/registrati", "/api/auth", "/shop", "/embed"]
 
 export default auth((req) => {
   const { pathname } = req.nextUrl
@@ -22,7 +22,7 @@ export default auth((req) => {
   }
 
   // Admin-only routes
-  const adminRoutes = ["/clienti", "/impostazioni", "/operatori", "/recensioni"]
+  const adminRoutes = ["/clienti", "/impostazioni", "/operatori", "/recensioni", "/report", "/onboarding"]
   if (adminRoutes.some((route) => pathname.startsWith(route))) {
     const role = req.auth?.user?.role
     if (role !== "ADMIN") {

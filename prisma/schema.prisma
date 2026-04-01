@@ -53,7 +53,10 @@ model User {
   referralsSent       Referral[]     @relation("ReferralsSent")
   referralsReceived   Referral[]     @relation("ReferralsReceived")
   referralCode        String?        @unique
+  birthDate           DateTime?
   walkInEntries       WalkInQueue[]
+  userPackages        UserPackage[]
+  marketingMessages   MarketingMessage[]
 }
 
 model Account {
@@ -113,6 +116,7 @@ model Service {
   beautyReminders   BeautyReminder[]
   feedPosts         FeedPost[]
   walkInEntries     WalkInQueue[]
+  packageItems      ServicePackageItem[]
 
   @@index([active, category])
 }
@@ -139,6 +143,7 @@ model Operator {
   reviews        Review[]
   portfolio      OperatorPortfolio[]
   feedPosts      FeedPost[]
+  locations      OperatorLocation[]
 
   @@index([active])
 }
@@ -175,9 +180,21 @@ model Appointment {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  service  Service  @relation(fields: [serviceId], references: [id], onDelete: Restrict)
-  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  locationId             String?
+  userPackageId          String?
+  stripePaymentIntentId  String?
+  paymentStatus          String?  @default("UNPAID") // UNPAID | DEPOSIT_PAID | PAID | FAILED
+  recurringPattern       String?  // WEEKLY | BIWEEKLY | MONTHLY
+  recurringEndDate       DateTime?
+  parentAppointmentId    String?
+  isRecurringInstance    Boolean  @default(false)
+
+  user              User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parentAppointment Appointment? @relation("RecurringAppointments", fields: [parentAppointmentId], references: [id])
+  childAppointments Appointment[] @relation("RecurringAppointments")
+  service  Service   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  operator Operator  @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  location Location? @relation(fields: [locationId], references: [id])
   review   Review?
   loyaltyTransactions LoyaltyTransaction[]
 
@@ -185,6 +202,7 @@ model Appointment {
   @@index([operatorId, date, status])
   @@index([operatorId, status])
   @@index([date, status])
+  @@index([locationId, date, status])
 }
 
 // ============ SHOP ============
@@ -212,12 +230,15 @@ model Product {
 }
 
 model Order {
-  id        String   @id @default(cuid())
-  userId    String
-  status    String   @default("PENDING") // PENDING | PROCESSING | SHIPPED | DELIVERED | CANCELLED
-  total     Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  userId                String
+  status                String   @default("PENDING") // PENDING | PROCESSING | SHIPPED | DELIVERED | CANCELLED
+  total                 Float
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  paymentStatus         String?  @default("UNPAID") // UNPAID | PAID | FAILED
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   user                User                @relation(fields: [userId], references: [id], onDelete: Restrict)
   items               OrderItem[]
@@ -310,6 +331,7 @@ model BusinessSettings {
   depositAmount         Float   @default(0)
   logo                  String?
   coverImage            String?
+  onboardingCompleted   Boolean  @default(false)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 }
@@ -553,10 +575,14 @@ model WalkInQueue {
   completedAt   DateTime?
   createdAt     DateTime  @default(now())
 
-  user    User?    @relation(fields: [userId], references: [id])
-  service Service? @relation(fields: [serviceId], references: [id])
+  locationId    String?
+
+  user     User?     @relation(fields: [userId], references: [id])
+  service  Service?  @relation(fields: [serviceId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
 
   @@index([status, createdAt])
+  @@index([locationId, status])
 }
 
 // ============ BEAUTY CALENDAR ============
@@ -576,4 +602,121 @@ model BeautyReminder {
   service Service? @relation(fields: [serviceId], references: [id])
 
   @@index([userId, active, suggestedDate])
+}
+
+// ============ SERVICE PACKAGES ============
+
+model ServicePackage {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  price         Float
+  originalPrice Float
+  totalSessions Int
+  validityDays  Int      @default(90)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items        ServicePackageItem[]
+  userPackages UserPackage[]
+
+  @@index([active])
+}
+
+model ServicePackageItem {
+  id        String @id @default(cuid())
+  packageId String
+  serviceId String
+  quantity  Int    @default(1)
+
+  package ServicePackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  service Service        @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@unique([packageId, serviceId])
+}
+
+model UserPackage {
+  id            String   @id @default(cuid())
+  userId        String
+  packageId     String
+  sessionsUsed  Int      @default(0)
+  sessionsTotal Int
+  purchasedAt   DateTime @default(now())
+  expiresAt     DateTime
+  status        String   @default("ACTIVE") // ACTIVE | EXPIRED | EXHAUSTED
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package ServicePackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([expiresAt, status])
+}
+
+// ============ MARKETING AUTOMATION ============
+
+model MarketingCampaign {
+  id               String    @id @default(cuid())
+  name             String
+  type             String    // BIRTHDAY | INACTIVITY | POST_VISIT | TIER_UPGRADE | SEASONAL
+  enabled          Boolean   @default(true)
+  triggerConfig    String?   // JSON config es. {"inactivityDays":30}
+  messageTitle     String
+  messageBody      String    // template con {name}, {days}, {service}, {tier}
+  notificationType String    @default("SYSTEM")
+  lastRunAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  messages MarketingMessage[]
+
+  @@index([enabled, type])
+}
+
+model MarketingMessage {
+  id             String   @id @default(cuid())
+  campaignId     String
+  userId         String
+  notificationId String?
+  status         String   @default("SENT") // SENT | FAILED
+  sentAt         DateTime @default(now())
+
+  campaign MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, sentAt])
+  @@index([userId, campaignId])
+}
+
+// ============ MULTI-LOCATION ============
+
+model Location {
+  id           String   @id @default(cuid())
+  name         String
+  address      String?
+  phone        String?
+  email        String?
+  openTime     String   @default("09:00")
+  closeTime    String   @default("19:00")
+  slotDuration Int      @default(30)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  operators    OperatorLocation[]
+  appointments Appointment[]
+  walkIns      WalkInQueue[]
+
+  @@index([active])
+}
+
+model OperatorLocation {
+  id         String @id @default(cuid())
+  operatorId String
+  locationId String
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([operatorId, locationId])
 }

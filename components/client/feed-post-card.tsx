@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Heart, Bookmark, MessageCircle, Calendar, Share2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -115,7 +116,7 @@ export function FeedPostCard({ post, onLikeToggle, onSaveToggle }: FeedPostCardP
       <div className="flex items-center gap-3 p-3">
         <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
           {post.operator.image ? (
-            <img src={post.operator.image} alt="" className="w-full h-full rounded-full object-cover" />
+            <Image src={post.operator.image} alt="" width={36} height={36} className="rounded-full object-cover" />
           ) : (
             operatorInitial
           )}
@@ -140,11 +141,12 @@ export function FeedPostCard({ post, onLikeToggle, onSaveToggle }: FeedPostCardP
         className="relative aspect-[4/5] cursor-pointer select-none"
         onDoubleClick={handleDoubleTapLike}
       >
-        <img
+        <Image
           src={showBefore && post.beforeImage ? post.beforeImage : post.image}
           alt={post.caption || "Post"}
-          className="w-full h-full object-cover"
-          loading="lazy"
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, 500px"
         />
 
         {/* Like animation overlay */}

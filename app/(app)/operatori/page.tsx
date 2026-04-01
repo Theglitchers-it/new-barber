@@ -77,7 +77,7 @@ export default function OperatoriPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-slide-up">
         <div>
-          <h1 className="text-3xl font-heading font-extrabold">Operatori</h1>
+          <h1 className="text-2xl sm:text-3xl font-heading font-extrabold">Operatori</h1>
           <p className="text-muted-foreground mt-1">
             {operators.length} operatori attivi
           </p>
@@ -101,41 +101,41 @@ export default function OperatoriPage() {
       </div>
 
       {/* Statistiche generali */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-slide-up" style={{ animationDelay: "100ms" }}>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 animate-slide-up" style={{ animationDelay: "100ms" }}>
         <Card className="glass">
-          <CardContent className="flex items-center gap-4 p-4 sm:p-6">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Users className="w-6 h-6 text-primary" />
+          <CardContent className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 p-3 sm:p-6">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <div>
-              <p className="text-2xl font-bold">{operators.length}</p>
-              <p className="text-sm text-muted-foreground">Operatori attivi</p>
+            <div className="text-center sm:text-left">
+              <p className="text-lg sm:text-2xl font-bold">{operators.length}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground">Operatori</p>
             </div>
           </CardContent>
         </Card>
         <Card className="glass">
-          <CardContent className="flex items-center gap-4 p-4 sm:p-6">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-emerald-500 dark:text-emerald-400" />
+          <CardContent className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 p-3 sm:p-6">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 dark:text-emerald-400" />
             </div>
-            <div>
-              <p className="text-2xl font-bold">
+            <div className="text-center sm:text-left">
+              <p className="text-lg sm:text-2xl font-bold">
                 {operators.reduce((sum, op) => sum + op.stats.completedAppointments, 0)}
               </p>
-              <p className="text-sm text-muted-foreground">Appuntamenti completati</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground">Completati</p>
             </div>
           </CardContent>
         </Card>
         <Card className="glass">
-          <CardContent className="flex items-center gap-4 p-4 sm:p-6">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Euro className="w-6 h-6 text-primary" />
+          <CardContent className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 p-3 sm:p-6">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Euro className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <div>
-              <p className="text-2xl font-bold">
+            <div className="text-center sm:text-left">
+              <p className="text-lg sm:text-2xl font-bold">
                 &euro;{Math.round(operators.reduce((sum, op) => sum + op.stats.revenue, 0))}
               </p>
-              <p className="text-sm text-muted-foreground">Revenue totale</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground">Revenue</p>
             </div>
           </CardContent>
         </Card>

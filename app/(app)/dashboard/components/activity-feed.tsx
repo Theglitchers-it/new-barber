@@ -1,11 +1,13 @@
 "use client"
 
-import { Calendar, Star, ShoppingBag, Activity, ArrowRight } from "lucide-react"
+import { useState } from "react"
+import { Calendar, Star, ShoppingBag, Activity, ArrowRight, ChevronDown, ChevronUp } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { it } from "date-fns/locale"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export interface ActivityItem {
@@ -38,8 +40,13 @@ const iconConfig = {
   },
 }
 
+const COLLAPSED_COUNT = 4
+
 export function ActivityFeed({ items }: ActivityFeedProps) {
-  const visibleItems = items.slice(0, 10)
+  const [expanded, setExpanded] = useState(false)
+  const allItems = items.slice(0, 10)
+  const visibleItems = expanded ? allItems : allItems.slice(0, COLLAPSED_COUNT)
+  const hasMore = allItems.length > COLLAPSED_COUNT
 
   return (
     <Card className="glass">
@@ -47,15 +54,15 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
         <CardTitle className="flex items-center gap-2 text-base font-heading">
           <Activity className="h-4 w-4" />
           Attività Recente
-          {visibleItems.length > 0 && (
+          {allItems.length > 0 && (
             <Badge variant="secondary" className="ml-auto text-[10px]">
-              {visibleItems.length}
+              {allItems.length}
             </Badge>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {visibleItems.length === 0 ? (
+        {allItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
             <Activity className="w-8 h-8 mb-2 opacity-30" />
             <p className="text-sm">Nessuna attività recente</p>
@@ -105,6 +112,26 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
                 )
               })}
             </div>
+            {hasMore && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setExpanded(!expanded)}
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp className="w-3.5 h-3.5 mr-1.5" />
+                    Mostra meno
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5 mr-1.5" />
+                    Mostra tutte ({allItems.length})
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         )}
       </CardContent>

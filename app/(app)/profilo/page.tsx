@@ -22,6 +22,7 @@ export default async function ProfiloPage() {
     reviewsAgg,
     topServiceGroup,
     topOperatorGroup,
+    recommendedProducts,
   ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -30,6 +31,7 @@ export default async function ProfiloPage() {
         email: true,
         phone: true,
         hairType: true,
+        birthDate: true,
         avatar: true,
         loyaltyPoints: true,
         totalSpent: true,
@@ -110,6 +112,19 @@ export default async function ProfiloPage() {
       _count: { operatorId: true },
       orderBy: { _count: { operatorId: "desc" } },
       take: 1,
+    }),
+    prisma.product.findMany({
+      where: { active: true },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        originalPrice: true,
+        image: true,
+        category: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 4,
     }),
   ])
 
@@ -203,6 +218,14 @@ export default async function ProfiloPage() {
       service: favoriteService?.name ?? null,
       operator: favoriteOperator?.name ?? null,
     },
+    recommendedProducts: recommendedProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      originalPrice: p.originalPrice,
+      image: p.image,
+      category: p.category,
+    })),
   }
 
   return (
@@ -211,6 +234,7 @@ export default async function ProfiloPage() {
       initialProfile={{
         preferredContact: user.preferredContact ?? null,
         notes: user.notes ?? null,
+        birthDate: user.birthDate?.toISOString().split("T")[0] ?? null,
       }}
     />
   )

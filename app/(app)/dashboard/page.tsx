@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+
+export const metadata = { title: "Dashboard" }
 import {
   Table,
   TableBody,
@@ -13,9 +15,7 @@ import {
 } from "@/components/ui/table"
 import { Star } from "lucide-react"
 import Link from "next/link"
-import dynamic from "next/dynamic"
-const RevenueChart = dynamic(() => import("./dashboard-charts").then((m) => ({ default: m.RevenueChart })))
-const ServiceDistributionChart = dynamic(() => import("./dashboard-charts").then((m) => ({ default: m.ServiceDistributionChart })))
+import { RevenueChart, ServiceDistributionChart } from "./dashboard-charts"
 import { APPOINTMENT_STATUS, USER_ROLE, LOYALTY_TYPE, ORDER_STATUS } from "@/lib/constants"
 import { ClientHomeFeed } from "./client-home-feed"
 import { KpiCards } from "./components/kpi-cards"
@@ -115,6 +115,7 @@ async function AdminDashboard({ period, userName }: { period: string; userName: 
     prevReviewsAgg,
     // Sparkline: daily data for last 7 days
     sparklineAppointments,
+    allServiceNames,
   ] = await Promise.all([
     prisma.appointment.count({
       where: { date: { gte: start, lt: end }, status: { not: APPOINTMENT_STATUS.CANCELLED } },
@@ -230,6 +231,11 @@ async function AdminDashboard({ period, userName }: { period: string; userName: 
       },
       select: { date: true, totalPrice: true },
     }),
+    // Service names for top services chart (avoids N+1 after Promise.all)
+    prisma.service.findMany({
+      where: { active: true },
+      select: { id: true, name: true },
+    }),
   ])
 
   // Build sparkline data (7 days)
@@ -292,15 +298,8 @@ async function AdminDashboard({ period, userName }: { period: string; userName: 
     }))
   }
 
-  // Resolve top service names
-  const topServiceIds = topServicesRaw.map((s) => s.serviceId)
-  const topServiceNames = topServiceIds.length > 0
-    ? await prisma.service.findMany({
-        where: { id: { in: topServiceIds } },
-        select: { id: true, name: true },
-      })
-    : []
-  const serviceNameMap = new Map(topServiceNames.map((s) => [s.id, s.name]))
+  // Resolve top service names (from pre-fetched data, no extra query)
+  const serviceNameMap = new Map(allServiceNames.map((s: { id: string; name: string }) => [s.id, s.name]))
 
   const topServices = topServicesRaw.map((s) => ({
     name: serviceNameMap.get(s.serviceId) || "N/A",
@@ -398,19 +397,19 @@ async function AdminDashboard({ period, userName }: { period: string; userName: 
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
-        <div>
-          <h1 className="text-2xl font-heading font-extrabold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Ciao, {userName}</p>
+      <div className="flex items-center justify-between gap-2 animate-fade-in">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-heading font-extrabold leading-tight">Dashboard</h1>
+          <p className="text-xs text-muted-foreground">Ciao, {userName}</p>
         </div>
         {/* Period Selector */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-1 shrink-0">
           {(["today", "week", "month", "year"] as const).map((p) => (
             <Link key={p} href={`/dashboard?period=${p}`}>
               <Button
                 variant={period === p ? "default" : "outline"}
                 size="sm"
-                className="text-xs h-8"
+                className="text-[10px] sm:text-xs h-7 px-2 sm:px-3"
               >
                 {periodLabels[p]}
               </Button>
@@ -436,12 +435,12 @@ async function AdminDashboard({ period, userName }: { period: string; userName: 
               Revenue — {periodLabels[period]}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="h-[200px] md:h-auto">
             <RevenueChart data={revenueData} />
           </CardContent>
         </Card>
 
-        <Card className="glass">
+        <Card className="glass hidden md:block">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-heading">Servizi Top</CardTitle>
           </CardHeader>
@@ -469,8 +468,24 @@ async function AdminDashboard({ period, userName }: { period: string; userName: 
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-heading">Performance Operatori</CardTitle>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <Table className="min-w-[400px]">
+          {/* Mobile: Card layout */}
+          <CardContent className="md:hidden space-y-2 pt-0">
+            {operatorPerformance.map((op) => (
+              <div key={op.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                <div>
+                  <p className="font-semibold text-sm">{op.name}</p>
+                  <p className="text-xs text-muted-foreground">{op.appointments} app. · €{Math.round(op.revenue)}</p>
+                </div>
+                <div className="flex items-center gap-1 text-sm font-bold">
+                  <Star className="w-3.5 h-3.5 text-primary fill-primary" />
+                  {op.rating.toFixed(1)}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+          {/* Desktop: Table layout */}
+          <CardContent className="hidden md:block p-0 overflow-x-auto">
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Operatore</TableHead>

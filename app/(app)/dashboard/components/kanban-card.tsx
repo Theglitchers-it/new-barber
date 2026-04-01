@@ -36,6 +36,7 @@ export function KanbanCard({ appointment }: KanbanCardProps) {
     <div
       ref={setNodeRef}
       style={style}
+      suppressHydrationWarning
       className={cn(
         "flex items-start gap-2 p-2.5 rounded-lg bg-background/80 border border-border/50",
         "hover:border-primary/30 transition-all duration-200 group cursor-grab active:cursor-grabbing",

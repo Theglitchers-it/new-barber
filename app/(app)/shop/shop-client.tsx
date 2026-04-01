@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { Search, Star, ShoppingCart } from "lucide-react"
 import Link from "next/link"
+import { StaggerList, StaggerItem } from "@/components/ui/stagger-list"
 import { proxyImageUrl } from "@/lib/image-url"
 
 type Product = {
@@ -133,9 +134,10 @@ export function ShopClient({ initialProducts, isLoggedIn = true }: { initialProd
       </div>
 
       {/* Prodotti */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filtered.map((product) => (
-          <Card key={product.id} className="overflow-hidden group glass border-0 shadow-md hover-lift">
+      <StaggerList className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4">
+        {filtered.map((product, i) => (
+          <StaggerItem key={product.id} index={i}>
+          <Card className="overflow-hidden group glass border-0 shadow-md hover-lift rounded-2xl">
             <div className="aspect-square bg-muted relative overflow-hidden">
               {product.image && product.image !== "/placeholder.jpg" ? (
                 <img
@@ -153,24 +155,24 @@ export function ShopClient({ initialProducts, isLoggedIn = true }: { initialProd
                 </span>
               )}
             </div>
-            <CardContent className="p-4 space-y-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+            <CardContent className="p-2.5 sm:p-4 space-y-1 sm:space-y-2">
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">
                 {product.category}
               </p>
-              <h3 className="font-bold">{product.name}</h3>
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <h3 className="font-bold text-sm sm:text-base line-clamp-1">{product.name}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 sm:line-clamp-2">
                 {product.description ?? ""}
               </p>
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-primary text-primary" />
-                <span className="text-sm font-medium">{product.rating}</span>
-                <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
+                <span className="text-xs sm:text-sm font-medium">{product.rating}</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground">({product.reviewCount})</span>
               </div>
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-lg gradient-text">€{product.price.toFixed(2)}</span>
+              <div className="flex items-center justify-between pt-1.5 sm:pt-2 gap-1.5">
+                <div className="min-w-0">
+                  <span className="font-extrabold text-sm sm:text-lg gradient-text">€{product.price.toFixed(2)}</span>
                   {product.originalPrice && (
-                    <span className="text-sm text-muted-foreground line-through">
+                    <span className="text-[10px] sm:text-sm text-muted-foreground line-through ml-1">
                       €{product.originalPrice.toFixed(2)}
                     </span>
                   )}
@@ -179,15 +181,18 @@ export function ShopClient({ initialProducts, isLoggedIn = true }: { initialProd
                   size="sm"
                   onClick={() => addToCart(product.id)}
                   disabled={product.stock === 0}
-                  className="min-h-[44px] min-w-[44px] active:animate-pop"
+                  aria-label="Aggiungi al carrello"
+                  className="h-8 w-8 sm:h-10 sm:w-auto sm:min-w-[44px] sm:px-3 p-0 sm:p-2 rounded-full sm:rounded-lg active:animate-pop shrink-0"
                 >
-                  {product.stock === 0 ? "Esaurito" : "Aggiungi"}
+                  <span className="sm:hidden text-lg leading-none">+</span>
+                  <span className="hidden sm:inline">{product.stock === 0 ? "Esaurito" : "Aggiungi"}</span>
                 </Button>
               </div>
             </CardContent>
           </Card>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerList>
 
       {filtered.length === 0 && (
         <div className="text-center py-12">

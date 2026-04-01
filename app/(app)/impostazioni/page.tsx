@@ -35,7 +35,8 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { Plus, Pencil, Trash2, Save, Scissors, Users, ShoppingBag, Ticket, Settings, Store, Clock, Gift, FileText, Mail, Phone, MapPin } from "lucide-react"
+import { Plus, Pencil, Trash2, Save, Scissors, Users, ShoppingBag, Ticket, Settings, Store, Clock, Gift, FileText, Mail, Phone, MapPin, Package, Megaphone, Play } from "lucide-react"
+import { campaignTypeLabels } from "@/lib/constants"
 
 type Service = {
   id: string
@@ -84,6 +85,36 @@ type Coupon = {
   active: boolean
 }
 
+type PackageItem = {
+  id: string
+  name: string
+  price: number
+  originalPrice: number
+  totalSessions: number
+  validityDays: number
+  active: boolean
+  items: { service: { name: string } }[]
+}
+
+type CampaignItem = {
+  id: string
+  name: string
+  type: string
+  enabled: boolean
+  lastRunAt: string | null
+  _count: { messages: number }
+}
+
+type LocationItem = {
+  id: string
+  name: string
+  address: string | null
+  openTime: string
+  closeTime: string
+  active: boolean
+  _count: { operators: number; appointments: number }
+}
+
 type BusinessSettingsType = {
   salonName: string
   address: string | null
@@ -114,6 +145,9 @@ export default function ImpostazioniPage() {
     loyaltyRedemptionRate: 0.1,
     cancellationPolicy: "",
   })
+  const [packages, setPackages] = useState<PackageItem[]>([])
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([])
+  const [locations, setLocations] = useState<LocationItem[]>([])
   const [loading, setLoading] = useState(true)
 
   const loadData = useCallback(async () => {
@@ -123,17 +157,23 @@ export default function ImpostazioniPage() {
         if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`)
         return r.json()
       }
-      const [sRes, oRes, pRes, cRes, setRes] = await Promise.all([
+      const [sRes, oRes, pRes, cRes, setRes, pkgRes, campRes, locRes] = await Promise.all([
         safeFetch("/api/services"),
         safeFetch("/api/operators"),
         safeFetch("/api/products"),
         safeFetch("/api/coupons"),
         safeFetch("/api/settings"),
+        safeFetch("/api/packages").catch(() => []),
+        safeFetch("/api/marketing/campaigns").catch(() => []),
+        safeFetch("/api/locations").catch(() => []),
       ])
       setServices(sRes)
       setOperators(oRes)
       setProducts(pRes)
       if (Array.isArray(cRes)) setCoupons(cRes)
+      if (Array.isArray(pkgRes)) setPackages(pkgRes)
+      if (Array.isArray(campRes)) setCampaigns(campRes)
+      if (Array.isArray(locRes)) setLocations(locRes)
       if (setRes && !setRes.error) {
         setSettings({
           salonName: setRes.salonName || "SalonPro",
@@ -172,6 +212,9 @@ export default function ImpostazioniPage() {
     { value: "operatori", label: "Team", icon: Users, count: operators.length },
     { value: "prodotti", label: "Prodotti", icon: ShoppingBag, count: products.length },
     { value: "coupon", label: "Coupon", icon: Ticket, count: coupons.length },
+    { value: "pacchetti", label: "Pacchetti", icon: Package, count: packages.length },
+    { value: "marketing", label: "Marketing", icon: Megaphone, count: campaigns.length },
+    { value: "sedi", label: "Sedi", icon: MapPin, count: locations.length },
     { value: "salone", label: "Salone", icon: Store, count: null },
   ]
 
@@ -205,13 +248,13 @@ export default function ImpostazioniPage() {
       </div>
 
       <Tabs defaultValue="servizi">
-        <TabsList className="flex-wrap h-auto gap-1">
+        <TabsList className="flex overflow-x-auto h-auto gap-1 w-full justify-start no-scrollbar">
           {tabCounts.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs">
+            <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs shrink-0">
               <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
               {tab.count !== null && (
-                <Badge variant="secondary" className="text-[9px] px-1 py-0 ml-0.5 h-4 min-w-[16px] justify-center">
+                <Badge variant="secondary" className="text-[10px] px-1 py-0 ml-0.5 h-4 min-w-[16px] justify-center">
                   {tab.count}
                 </Badge>
               )}
@@ -237,6 +280,163 @@ export default function ImpostazioniPage() {
         {/* ===== COUPON TAB ===== */}
         <TabsContent value="coupon" className="mt-6">
           <CouponTab coupons={coupons} onRefresh={loadData} />
+        </TabsContent>
+
+        {/* ===== PACCHETTI TAB ===== */}
+        <TabsContent value="pacchetti" className="mt-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-bold">Pacchetti Servizi</h3>
+            </div>
+            {packages.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Package className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-muted-foreground text-sm">Nessun pacchetto. Crea il primo dalla pagina /pacchetti.</p>
+              </Card>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Prezzo</TableHead>
+                    <TableHead>Sessioni</TableHead>
+                    <TableHead>Validità</TableHead>
+                    <TableHead>Attivo</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {packages.map((pkg) => (
+                    <TableRow key={pkg.id}>
+                      <TableCell className="font-medium">{pkg.name}</TableCell>
+                      <TableCell>€{pkg.price.toFixed(2)} <span className="text-xs text-muted-foreground line-through">€{pkg.originalPrice.toFixed(2)}</span></TableCell>
+                      <TableCell>{pkg.totalSessions}</TableCell>
+                      <TableCell>{pkg.validityDays}gg</TableCell>
+                      <TableCell><Badge variant={pkg.active ? "default" : "secondary"}>{pkg.active ? "Sì" : "No"}</Badge></TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                          await fetch(`/api/packages/${pkg.id}`, { method: "DELETE" })
+                          toast.success("Pacchetto disattivato")
+                          loadData()
+                        }}><Trash2 className="w-4 h-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* ===== MARKETING TAB ===== */}
+        <TabsContent value="marketing" className="mt-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-bold">Campagne Marketing</h3>
+              <Button size="sm" variant="outline" onClick={async () => {
+                const res = await fetch("/api/marketing/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
+                if (res.ok) {
+                  const data = await res.json()
+                  const total = data.results?.reduce((s: number, r: { messagesSent: number }) => s + r.messagesSent, 0) || 0
+                  toast.success(`${total} messaggi inviati`)
+                  loadData()
+                } else toast.error("Errore")
+              }}><Play className="w-4 h-4 mr-1" /> Esegui Tutte</Button>
+            </div>
+            {campaigns.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Megaphone className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-muted-foreground text-sm">Nessuna campagna configurata.</p>
+              </Card>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Attiva</TableHead>
+                    <TableHead>Messaggi</TableHead>
+                    <TableHead>Ultimo invio</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {campaigns.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell><Badge variant="outline">{campaignTypeLabels[c.type] || c.type}</Badge></TableCell>
+                      <TableCell>
+                        <Switch checked={c.enabled} onCheckedChange={async (enabled) => {
+                          await fetch(`/api/marketing/campaigns/${c.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled }) })
+                          loadData()
+                        }} />
+                      </TableCell>
+                      <TableCell>{c._count.messages}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{c.lastRunAt ? new Date(c.lastRunAt).toLocaleDateString("it-IT") : "Mai"}</TableCell>
+                      <TableCell className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                          await fetch(`/api/marketing/campaigns/${c.id}`, { method: "POST" })
+                          toast.success("Campagna eseguita")
+                          loadData()
+                        }}><Play className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                          await fetch(`/api/marketing/campaigns/${c.id}`, { method: "DELETE" })
+                          toast.success("Campagna eliminata")
+                          loadData()
+                        }}><Trash2 className="w-4 h-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* ===== SEDI TAB ===== */}
+        <TabsContent value="sedi" className="mt-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-bold">Sedi</h3>
+            </div>
+            {locations.length === 0 ? (
+              <Card className="p-8 text-center">
+                <MapPin className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-muted-foreground text-sm">Nessuna sede configurata.</p>
+              </Card>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Indirizzo</TableHead>
+                    <TableHead>Orari</TableHead>
+                    <TableHead>Operatori</TableHead>
+                    <TableHead>Attiva</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {locations.map((loc) => (
+                    <TableRow key={loc.id}>
+                      <TableCell className="font-medium">{loc.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{loc.address || "-"}</TableCell>
+                      <TableCell className="text-sm">{loc.openTime} - {loc.closeTime}</TableCell>
+                      <TableCell>{loc._count.operators}</TableCell>
+                      <TableCell><Badge variant={loc.active ? "default" : "secondary"}>{loc.active ? "Sì" : "No"}</Badge></TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                          await fetch(`/api/locations/${loc.id}`, { method: "DELETE" })
+                          toast.success("Sede disattivata")
+                          loadData()
+                        }}><Trash2 className="w-4 h-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
         </TabsContent>
 
         {/* ===== SALONE TAB ===== */}

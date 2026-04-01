@@ -52,6 +52,41 @@ export const REFERRAL_STATUS = {
   EXPIRED: "EXPIRED",
 } as const
 
+export const PACKAGE_STATUS = {
+  ACTIVE: "ACTIVE",
+  EXPIRED: "EXPIRED",
+  EXHAUSTED: "EXHAUSTED",
+} as const
+
+export const CAMPAIGN_TYPE = {
+  BIRTHDAY: "BIRTHDAY",
+  INACTIVITY: "INACTIVITY",
+  POST_VISIT: "POST_VISIT",
+  TIER_UPGRADE: "TIER_UPGRADE",
+  SEASONAL: "SEASONAL",
+} as const
+
+export const PAYMENT_STATUS = {
+  UNPAID: "UNPAID",
+  DEPOSIT_PAID: "DEPOSIT_PAID",
+  PAID: "PAID",
+  FAILED: "FAILED",
+} as const
+
+export const paymentStatusLabels: Record<string, string> = {
+  UNPAID: "Non pagato",
+  DEPOSIT_PAID: "Acconto versato",
+  PAID: "Pagato",
+  FAILED: "Fallito",
+}
+
+export const paymentStatusColors: Record<string, string> = {
+  UNPAID: "status-pending",
+  DEPOSIT_PAID: "status-in-progress",
+  PAID: "status-completed",
+  FAILED: "status-cancelled",
+}
+
 export const WALKIN_STATUS = {
   WAITING: "WAITING",
   SERVING: "SERVING",
@@ -140,4 +175,26 @@ export const orderStatusColors: Record<string, string> = {
   SHIPPED: "status-in-progress",
   DELIVERED: "status-completed",
   CANCELLED: "status-cancelled",
+}
+
+// Package status
+export const packageStatusLabels: Record<string, string> = {
+  ACTIVE: "Attivo",
+  EXPIRED: "Scaduto",
+  EXHAUSTED: "Esaurito",
+}
+
+export const packageStatusColors: Record<string, string> = {
+  ACTIVE: "status-completed",
+  EXPIRED: "status-cancelled",
+  EXHAUSTED: "status-pending",
+}
+
+// Campaign types
+export const campaignTypeLabels: Record<string, string> = {
+  BIRTHDAY: "Compleanno",
+  INACTIVITY: "Inattività",
+  POST_VISIT: "Dopo visita",
+  TIER_UPGRADE: "Upgrade livello",
+  SEASONAL: "Promozione stagionale",
 }

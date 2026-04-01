@@ -31,11 +31,20 @@ interface KpiCardsProps {
 
 export function KpiCards({ kpis }: KpiCardsProps) {
   return (
-    <div className="stagger-children grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-      {kpis.map((kpi) => (
-        <KpiCard key={kpi.label} kpi={kpi} />
-      ))}
-    </div>
+    <>
+      {/* Mobile: show first 4 KPIs in 2x2 grid */}
+      <div className="grid grid-cols-2 gap-2 md:hidden">
+        {kpis.slice(0, 4).map((kpi) => (
+          <KpiCard key={kpi.label} kpi={kpi} />
+        ))}
+      </div>
+      {/* Desktop: show all 8 KPIs in 4-column grid */}
+      <div className="hidden md:grid md:grid-cols-4 gap-3">
+        {kpis.map((kpi) => (
+          <KpiCard key={kpi.label} kpi={kpi} />
+        ))}
+      </div>
+    </>
   )
 }
 
@@ -58,7 +67,7 @@ function KpiCard({ kpi }: { kpi: KpiData }) {
 
   return (
     <Card className="glass hover-lift p-0 border-0 gap-0">
-      <CardContent className="p-2.5 sm:p-3">
+      <CardContent className="p-3">
         {/* Top: Icon + Label */}
         <div className="flex items-center gap-2 mb-1.5">
           <div
@@ -69,7 +78,7 @@ function KpiCard({ kpi }: { kpi: KpiData }) {
           >
             <Icon className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium leading-tight">
             {label}
           </span>
         </div>

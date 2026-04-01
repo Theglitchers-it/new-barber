@@ -36,7 +36,7 @@ import { FAQSection } from "@/components/landing/faq-section"
 import { ParallaxHero } from "@/components/landing/parallax-hero"
 import { BeforeAfterSlider } from "@/components/ui/before-after-slider"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 300
 
 export default async function LandingPage() {
   const [settings, popularServices, allServices, operators, reviews, products] =
@@ -101,6 +101,21 @@ export default async function LandingPage() {
         ).toFixed(1)
       : "5.0"
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "HairSalon",
+    name: salonName,
+    address: settings?.address ? { "@type": "PostalAddress", streetAddress: settings.address } : undefined,
+    telephone: settings?.phone || undefined,
+    email: settings?.email || undefined,
+    openingHours: settings ? `Mo-Sa ${settings.openTime}-${settings.closeTime}` : undefined,
+    aggregateRating: reviews.length > 0 ? {
+      "@type": "AggregateRating",
+      ratingValue: (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1),
+      reviewCount: reviews.length,
+    } : undefined,
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* ===== NAVBAR ===== */}
@@ -111,11 +126,19 @@ export default async function LandingPage() {
             <div className="w-8 h-8 rounded-xl gradient-primary flex items-center justify-center shadow-md shadow-primary/20">
               <Scissors className="w-4 h-4 text-white" />
             </div>
-            <span className="font-heading text-[15px] font-extrabold gradient-text">
+            <span className="font-heading text-[15px] font-extrabold gradient-text truncate max-w-[100px]">
               {salonName}
             </span>
           </Link>
-          <MobileNav salonName={salonName} />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link href="/login" className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg hover:bg-muted/30 transition-colors shrink-0">
+              Accedi
+            </Link>
+            <Link href="/registrati" className="btn-gradient text-[11px] font-bold px-2.5 py-1.5 rounded-lg shrink-0">
+              Registrati
+            </Link>
+            <MobileNav salonName={salonName} />
+          </div>
         </div>
       </nav>
 
@@ -324,16 +347,16 @@ export default async function LandingPage() {
               <ScrollReveal key={item.step} delay={i * 150}>
                   <Card className="glass glow-card hover-lift h-full relative group">
                     <CardContent className="p-4 sm:p-6 text-center">
-                      <div className="text-4xl sm:text-5xl font-heading font-extrabold text-primary/10 mb-2 sm:mb-3">
+                      <div className="text-2xl sm:text-5xl font-heading font-extrabold text-primary/10 mb-1 sm:mb-3">
                         {item.step}
                       </div>
-                      <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4 group-hover:animate-pop">
-                        <item.icon className="w-6 h-6 text-white" />
+                      <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:animate-pop">
+                        <item.icon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-heading font-bold mb-2 sm:mb-3">
+                      <h3 className="text-base sm:text-xl font-heading font-bold mb-1.5 sm:mb-3">
                         {item.title}
                       </h3>
-                      <p className="text-muted-foreground leading-relaxed">
+                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                         {item.desc}
                       </p>
                     </CardContent>
@@ -432,13 +455,13 @@ export default async function LandingPage() {
               </div>
             </ScrollReveal>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {operators.map((operator, i) => (
                 <ScrollReveal key={operator.id} delay={i * 120}>
                   <Card className="glass text-center overflow-hidden hover-lift glow-card group h-full">
-                    <CardContent className="p-6">
-                      <div className="relative w-20 h-20 mx-auto mb-4">
-                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/20 group-hover:border-primary/50 transition-colors">
+                    <CardContent className="p-3 sm:p-6">
+                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4">
+                        <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-primary/20 group-hover:border-primary/50 transition-colors">
                           <img
                             loading="lazy"
                             src={`https://images.unsplash.com/photo-${TEAM_AVATARS[i % TEAM_AVATARS.length]}?w=200&h=200&fit=crop&crop=face`}
@@ -447,16 +470,16 @@ export default async function LandingPage() {
                           />
                         </div>
                         {operator.rating >= 4.5 && (
-                          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full gradient-primary flex items-center justify-center border-2 border-background float-slow">
-                            <Star className="w-4 h-4 text-white fill-white" />
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-8 sm:h-8 rounded-full gradient-primary flex items-center justify-center border-2 border-background float-slow">
+                            <Star className="w-3 h-3 sm:w-4 sm:h-4 text-white fill-white" />
                           </div>
                         )}
                       </div>
 
-                      <h3 className="text-lg font-heading font-bold">
+                      <h3 className="text-sm sm:text-lg font-heading font-bold">
                         {operator.name}
                       </h3>
-                      <p className="text-sm text-primary/80 font-medium mb-3">
+                      <p className="text-xs sm:text-sm text-primary/80 font-medium mb-2 sm:mb-3">
                         {operator.role}
                       </p>
 
@@ -470,14 +493,14 @@ export default async function LandingPage() {
                       )}
 
                       {operator.specializations && (
-                        <div className="flex flex-wrap justify-center gap-1.5 mt-3">
+                        <div className="flex flex-wrap justify-center gap-1 sm:gap-1.5 mt-2 sm:mt-3">
                           {operator.specializations
                             .split(",")
                             .slice(0, 3)
                             .map((s) => (
                               <span
                                 key={s}
-                                className="text-[11px] px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium"
+                                className="text-[9px] sm:text-[11px] px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-primary/10 text-primary font-medium"
                               >
                                 {s.trim()}
                               </span>
@@ -536,15 +559,15 @@ export default async function LandingPage() {
             ].map((item, i) => (
               <ScrollReveal key={item.title} variant={item.variant} delay={i * 100}>
                 <Card className="glass hover-lift glow-card group h-full">
-                  <CardContent className="p-6 flex items-start gap-5">
-                    <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shrink-0 group-hover:animate-pop">
-                      <item.icon className="w-6 h-6 text-white" />
+                  <CardContent className="p-4 sm:p-6 flex items-start gap-3 sm:gap-5">
+                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl gradient-primary flex items-center justify-center shrink-0 group-hover:animate-pop">
+                      <item.icon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-heading font-bold mb-1">
+                      <h3 className="text-base sm:text-lg font-heading font-bold mb-1">
                         {item.title}
                       </h3>
-                      <p className="text-muted-foreground leading-relaxed">
+                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -772,24 +795,23 @@ export default async function LandingPage() {
       )}
 
       {/* ===== CTA FINALE ===== */}
-      <section className="py-10 sm:py-14 px-4 relative overflow-hidden">
+      <section className="py-8 sm:py-14 px-4 relative overflow-hidden">
         <div className="absolute inset-0 gradient-primary opacity-[0.04]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[180px] bg-[oklch(0.55_0.24_25/0.12)]" />
 
         <ScrollReveal variant="scale">
           <div className="max-w-3xl mx-auto text-center relative">
-            <h2 className="text-2xl sm:text-5xl font-heading font-extrabold mb-6">
+            <h2 className="text-xl sm:text-5xl font-heading font-extrabold mb-3 sm:mb-6">
               Pronto per il tuo{" "}
               <span className="gradient-text-animated">nuovo look</span>?
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-              Registrati gratis e prenota il tuo primo appuntamento. Ci vediamo
-              in salone.
+            <p className="text-sm sm:text-lg text-muted-foreground mb-5 sm:mb-8 max-w-xl mx-auto">
+              Registrati gratis e prenota il tuo primo appuntamento.
             </p>
-            <Link href="/registrati" className="btn-gradient text-lg px-10 py-4 rounded-2xl font-bold inline-flex items-center gap-3 animate-glow">
-              <UserPlus className="w-5 h-5" />
+            <Link href="/registrati" className="btn-gradient text-sm sm:text-lg px-6 sm:px-10 py-3 sm:py-4 rounded-2xl font-bold inline-flex items-center gap-2 sm:gap-3 animate-glow">
+              <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
               Crea il tuo account
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
           </div>
         </ScrollReveal>
@@ -830,38 +852,38 @@ export default async function LandingPage() {
             </div>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <ScrollReveal variant="left">
               <Card className="glass hover-lift h-full">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-heading font-bold mb-4">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-xl font-heading font-bold mb-3 sm:mb-4">
                     Info & Contatti
                   </h3>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {settings?.address && (
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-                          <MapPin className="w-5 h-5 text-white" />
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl gradient-primary flex items-center justify-center shrink-0">
+                          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
-                        <span className="text-muted-foreground mt-2">
+                        <span className="text-sm text-muted-foreground mt-1.5">
                           {settings.address}
                         </span>
                       </div>
                     )}
                     {settings?.phone && (
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-                          <Phone className="w-5 h-5 text-white" />
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl gradient-primary flex items-center justify-center shrink-0">
+                          <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
-                        <span className="text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           {settings.phone}
                         </span>
                       </div>
                     )}
                     {settings?.email && (
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-                          <Mail className="w-5 h-5 text-white" />
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl gradient-primary flex items-center justify-center shrink-0">
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
                         <span className="text-muted-foreground">
                           {settings.email}
@@ -882,39 +904,34 @@ export default async function LandingPage() {
 
             <ScrollReveal variant="right">
               <Card className="glass hover-lift h-full">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-heading font-bold mb-4">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-xl font-heading font-bold mb-3 sm:mb-4">
                     Orari
                   </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-                        <Clock className="w-5 h-5 text-white" />
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl gradient-primary flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
                       <div>
-                        <p className="font-bold">Lunedì — Sabato</p>
-                        <p className="text-muted-foreground">
-                          Mattina: 9:00 — 12:30
-                        </p>
-                        <p className="text-muted-foreground">
-                          Pomeriggio: 14:30 — 19:00
-                        </p>
+                        <p className="text-sm font-bold">Lunedì — Sabato</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">9:00 — 12:30 / 14:30 — 19:00</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                        <Clock className="w-5 h-5 text-muted-foreground" />
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-muted flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="font-bold">Domenica</p>
-                        <p className="text-muted-foreground">Chiuso</p>
+                        <p className="text-sm font-bold">Domenica</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Chiuso</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-8">
-                    <Link href="/login" className="btn-gradient w-full py-3.5 rounded-xl font-bold inline-flex items-center justify-center gap-2 text-base">
-                      <Calendar className="w-4 h-4" />
+                  <div className="mt-5 sm:mt-8">
+                    <Link href="/login" className="btn-gradient w-full py-2.5 sm:py-3.5 rounded-xl font-bold inline-flex items-center justify-center gap-2 text-sm sm:text-base">
+                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       Prenota il tuo appuntamento
                     </Link>
                   </div>
@@ -926,14 +943,14 @@ export default async function LandingPage() {
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer className="py-12 sm:py-16 px-4 border-t border-border/50 gradient-bg-subtle relative overflow-hidden">
+      <footer className="py-8 sm:py-16 px-4 border-t border-border/50 gradient-bg-subtle relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-[120px] bg-[oklch(0.55_0.24_25/0.05)]" />
         <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full blur-[120px] bg-[oklch(0.42_0.18_260/0.05)]" />
 
         <div className="max-w-6xl mx-auto relative">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-12">
             {/* Brand */}
-            <div className="col-span-2 sm:col-span-1">
+            <div>
               <Link href="/" className="flex items-center gap-2 mb-4">
                 <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-md">
                   <Scissors className="w-4 h-4 text-white" />
@@ -963,62 +980,38 @@ export default async function LandingPage() {
               </div>
             </div>
 
-            {/* Link Rapidi */}
+            {/* Navigazione — compact horizontal on mobile */}
             <div>
-              <h4 className="font-heading font-bold text-sm mb-4">Link Rapidi</h4>
-              <ul className="space-y-2.5">
+              <h4 className="font-heading font-bold text-sm mb-3">Navigazione</h4>
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
                 {[
                   { href: "#servizi", label: "Servizi" },
                   { href: "#team", label: "Il Team" },
-                  { href: "#gallery", label: "Galleria" },
                   { href: "#contatti", label: "Contatti" },
                   { href: "/shop", label: "Shop" },
+                  { href: "/login", label: "Accedi" },
+                  { href: "/registrati", label: "Registrati" },
                 ].map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
+                  <Link key={link.href} href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {link.label}
+                  </Link>
                 ))}
-              </ul>
+              </div>
             </div>
 
             {/* Orari */}
             <div>
-              <h4 className="font-heading font-bold text-sm mb-4">Orari</h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li className="flex justify-between">
+              <h4 className="font-heading font-bold text-sm mb-3">Orari</h4>
+              <div className="space-y-1.5 text-sm text-muted-foreground">
+                <div className="flex justify-between">
                   <span>Lun — Sab</span>
-                  <span className="font-medium text-foreground text-xs">9:00–12:30 / 14:30–19:00</span>
-                </li>
-                <li className="flex justify-between">
+                  <span className="font-medium text-foreground text-xs">9:00–19:00</span>
+                </div>
+                <div className="flex justify-between">
                   <span>Domenica</span>
-                  <span className="text-muted-foreground">Chiuso</span>
-                </li>
-              </ul>
-              <div className="mt-4">
-                <Link href="/login" className="btn-gradient px-4 py-2 rounded-xl font-bold text-xs inline-flex items-center gap-1.5">
-                  <Calendar className="w-3 h-3" /> Prenota ora
-                </Link>
+                  <span>Chiuso</span>
+                </div>
               </div>
-            </div>
-
-            {/* Account */}
-            <div>
-              <h4 className="font-heading font-bold text-sm mb-4">Il tuo Account</h4>
-              <ul className="space-y-2.5">
-                {[
-                  { href: "/login", label: "Accedi" },
-                  { href: "/registrati", label: "Registrati" },
-                  { href: "/shop", label: "Shop Online" },
-                ].map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
 
@@ -1029,8 +1022,8 @@ export default async function LandingPage() {
               &copy; {new Date().getFullYear()} {salonName}. Tutti i diritti riservati.
             </p>
             <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
-              <span className="hover:text-muted-foreground transition-colors cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-muted-foreground transition-colors cursor-pointer">Termini di Servizio</span>
+              <Link href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy Policy</Link>
+              <Link href="/termini" className="hover:text-muted-foreground transition-colors">Termini di Servizio</Link>
             </div>
           </div>
         </div>
@@ -1041,6 +1034,7 @@ export default async function LandingPage() {
       <BackToTop />
       {/* [2] WhatsApp */}
       {settings?.phone && <WhatsAppButton phone={settings.phone} />}
+      <script type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     </div>
   )
 }

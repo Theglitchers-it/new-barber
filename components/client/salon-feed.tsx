@@ -1,6 +1,7 @@
 "use client"
 
 import useEmblaCarousel from "embla-carousel-react"
+import Image from "next/image"
 import { useCallback, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 
@@ -48,11 +49,12 @@ export function SalonFeed() {
             <div key={i} className="flex-none basis-[85%] sm:basis-[70%] pl-2">
               <div className="relative aspect-[16/9] rounded-xl overflow-hidden group">
                 {/* After image (result) as main visible */}
-                <img
+                <Image
                   src={`https://images.unsplash.com/${slide.after}?w=500&h=280&fit=crop`}
                   alt={slide.caption}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 85vw, 70vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                 <div className="absolute bottom-2 left-2.5 right-2.5">

@@ -133,16 +133,16 @@ export function PrenotazioniClient({
       </div>
 
       {/* Filters */}
-      <div className="space-y-3">
-        {/* Status tabs */}
-        <div className="flex gap-1.5 flex-wrap">
+      <div className="space-y-2">
+        {/* Status tabs — grid on mobile, flex on desktop */}
+        <div className="grid grid-cols-3 sm:flex gap-1.5">
           {statusFilters.map((f) => (
             <Button
               key={f.key}
               variant={statusFilter === f.key ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter(f.key)}
-              className="text-xs"
+              className="text-[10px] sm:text-xs h-7 px-2"
             >
               {f.label}
               {f.key !== "ALL" && (
@@ -156,14 +156,14 @@ export function PrenotazioniClient({
 
         {/* Period + Search row */}
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="flex gap-1.5">
+          <div className="flex gap-1 shrink-0">
             {periodFilters.map((f) => (
               <Button
                 key={f.key}
                 variant={periodFilter === f.key ? "secondary" : "ghost"}
                 size="sm"
                 onClick={() => setPeriodFilter(f.key)}
-                className="text-xs"
+                className="text-[10px] sm:text-xs h-7 px-2"
               >
                 {f.label}
               </Button>
@@ -176,7 +176,7 @@ export function PrenotazioniClient({
                 placeholder="Cerca cliente o servizio..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-9 text-sm"
+                className="pl-9 h-8 text-sm rounded-xl"
               />
             </div>
           )}
@@ -206,7 +206,7 @@ export function PrenotazioniClient({
             const isToday = aptDate.toDateString() === new Date().toDateString()
 
             return (
-              <Card key={apt.id} className="glass hover-lift group">
+              <Card key={apt.id} className="glass hover-lift group rounded-2xl border-0">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-3">
                     {/* Date badge */}

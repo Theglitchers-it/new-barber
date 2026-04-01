@@ -58,6 +58,7 @@ const badgeDefinitions = [
   { id: "vip", label: "VIP", icon: Crown, threshold: 10, type: "visits" as const },
   { id: "ambassador", label: "Ambasciatore", icon: Award, threshold: 25, type: "visits" as const },
   { id: "big_spender", label: "Big Spender", icon: Euro, threshold: 500, type: "spent" as const },
+  { id: "super_fan", label: "Super Fan", icon: Zap, threshold: 50, type: "visits" as const },
 ]
 
 export default function FedeltaPage() {
@@ -277,7 +278,7 @@ export default function FedeltaPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{client.name || client.email}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <Badge className="text-[9px] px-1.5 py-0 gap-0.5" style={{ background: clientTier.color, color: "white", border: "none" }}>
+                          <Badge className="text-[10px] px-1.5 py-0 gap-0.5" style={{ background: clientTier.color, color: "white", border: "none" }}>
                             <ClientTierIcon className="w-2.5 h-2.5" /> {clientTier.label}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground">€{client.totalSpent.toFixed(0)} spesi</span>
@@ -285,7 +286,7 @@ export default function FedeltaPage() {
                       </div>
                       <div className="text-right shrink-0">
                         <p className="font-heading font-bold text-sm">{client.loyaltyPoints}</p>
-                        <p className="text-[9px] text-muted-foreground">punti</p>
+                        <p className="text-[10px] text-muted-foreground">punti</p>
                       </div>
                     </div>
                   )
@@ -344,7 +345,7 @@ export default function FedeltaPage() {
       </div>
 
       {/* Tier Hero — compatto */}
-      <Card className="glass overflow-hidden">
+      <Card className="glass overflow-hidden rounded-2xl border-0">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <div
@@ -402,10 +403,10 @@ export default function FedeltaPage() {
       {/* Tier Roadmap + Badges — affiancati */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Tiers */}
-        <Card className="glass border-0">
+        <Card className="glass border-0 rounded-2xl">
           <CardContent className="p-3">
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-2">Livelli</p>
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="grid grid-cols-4 gap-2">
               {Object.entries(LOYALTY_TIER_CONFIG).map(([key, config]) => {
                 const Icon = tierIcons[key] || Shield
                 const unlocked = loyalty.totalPointsEarned >= config.threshold
@@ -414,13 +415,13 @@ export default function FedeltaPage() {
                   <div
                     key={key}
                     className={cn(
-                      "relative p-2 rounded-xl text-center transition-all",
+                      "relative p-2.5 rounded-2xl text-center transition-all",
                       current ? "ring-2 ring-primary bg-primary/5" : unlocked ? "bg-muted/50" : "opacity-40"
                     )}
                   >
-                    {!unlocked && <Lock className="w-2.5 h-2.5 absolute top-1 right-1 text-muted-foreground" />}
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-1" style={{ background: unlocked ? config.color : undefined }}>
-                      <Icon className={cn("w-4 h-4", unlocked ? "text-white" : "text-muted-foreground")} />
+                    {!unlocked && <Lock className="w-2.5 h-2.5 absolute top-1.5 right-1.5 text-muted-foreground" />}
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-1.5" style={{ background: unlocked ? config.color : undefined }}>
+                      <Icon className={cn("w-4.5 h-4.5", unlocked ? "text-white" : "text-muted-foreground")} />
                     </div>
                     <p className="text-[10px] font-bold">{config.label}</p>
                     <p className="text-[9px] text-muted-foreground">{config.threshold}+ pt</p>
@@ -432,17 +433,17 @@ export default function FedeltaPage() {
         </Card>
 
         {/* Badges */}
-        <Card className="glass border-0">
+        <Card className="glass border-0 rounded-2xl">
           <CardContent className="p-3">
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-2">Badge</p>
-            <div className="grid grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {badgeDefinitions.map((badge) => {
                 const value = badge.type === "visits" ? loyalty.totalVisits : loyalty.totalSpent
                 const unlocked = value >= badge.threshold
                 return (
-                  <div key={badge.id} className={cn("p-2 rounded-xl text-center transition-all", unlocked ? "bg-primary/10" : "opacity-30")}>
-                    <badge.icon className={cn("w-5 h-5 mx-auto mb-0.5", unlocked ? "text-primary" : "text-muted-foreground")} />
-                    <p className="text-[8px] font-bold leading-tight">{badge.label}</p>
+                  <div key={badge.id} className={cn("p-2.5 rounded-2xl text-center transition-all", unlocked ? "bg-primary/10" : "opacity-30")}>
+                    <badge.icon className={cn("w-5 h-5 mx-auto mb-1", unlocked ? "text-primary" : "text-muted-foreground")} />
+                    <p className="text-[10px] font-bold leading-tight">{badge.label}</p>
                   </div>
                 )
               })}
@@ -452,7 +453,7 @@ export default function FedeltaPage() {
       </div>
 
       {/* Transactions */}
-      <Card className="glass border-0">
+      <Card className="glass border-0 rounded-2xl">
         <CardContent className="p-3">
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-2">Storico</p>
           {loyalty.transactions.length === 0 ? (

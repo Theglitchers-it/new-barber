@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { createAppointmentSchema } from "@/lib/validations/appointment"
 import { appointmentLimiter, getRateLimitResponse } from "@/lib/rate-limit"
+import { sendEmail, isEmailEnabled } from "@/lib/email"
+import { appointmentConfirmation } from "@/lib/email-templates"
+import { generateGoogleCalendarUrl } from "@/lib/ical"
 
 export async function GET() {
   const session = await auth()
@@ -97,6 +100,35 @@ export async function POST(request: Request) {
         },
       })
     })
+
+    // Send confirmation email (non-blocking)
+    if (isEmailEnabled()) {
+      const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { email: true, name: true } })
+      const settings = await prisma.businessSettings.findFirst({ where: { id: "default" }, select: { address: true } })
+      if (user?.email) {
+        const aptDate = new Date(date)
+        const calendarUrl = generateGoogleCalendarUrl({
+          date: aptDate, startTime, endTime,
+          serviceName: appointment.service.name,
+          operatorName: appointment.operator.name,
+          address: settings?.address || undefined,
+        })
+        sendEmail({
+          to: user.email,
+          subject: `Prenotazione confermata: ${appointment.service.name}`,
+          html: appointmentConfirmation({
+            customerName: user.name || "Cliente",
+            serviceName: appointment.service.name,
+            operatorName: appointment.operator.name,
+            date: aptDate.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" }),
+            startTime, endTime,
+            totalPrice: appointment.service.price,
+            address: settings?.address || undefined,
+            calendarUrl,
+          }),
+        }).catch(() => {}) // non-blocking
+      }
+    }
 
     return NextResponse.json(appointment, { status: 201 })
   } catch (err) {

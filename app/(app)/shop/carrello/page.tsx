@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from "lucide-react"
 import Link from "next/link"
+import { CheckoutButton } from "@/components/stripe/checkout-button"
 
 type CartItemType = {
   id: string
@@ -123,38 +124,35 @@ export default function CarrelloPage() {
           <div className="lg:col-span-2 space-y-3">
             {items.map((item) => (
               <Card key={item.id}>
-                <CardContent className="flex items-center gap-3 p-3 sm:p-4">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-lg shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{item.product.name}</p>
-                    <p className="text-sm text-muted-foreground">{item.product.category}</p>
-                    <p className="font-bold mt-1">€{item.product.price.toFixed(2)}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="w-9 h-9 sm:w-8 sm:h-8"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    >
-                      <Minus className="w-3 h-3" />
-                    </Button>
-                    <span className="w-8 text-center font-medium">{item.quantity}</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="w-9 h-9 sm:w-8 sm:h-8"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-lg shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{item.product.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.product.category}</p>
+                      <p className="font-bold text-sm mt-0.5">€{item.product.price.toFixed(2)}</p>
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="w-8 h-8 text-destructive"
+                      className="w-10 h-10 sm:w-8 sm:h-8 text-destructive shrink-0 hidden sm:flex"
                       onClick={() => removeItem(item.id)}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30 sm:border-0 sm:mt-0 sm:pt-0 sm:justify-end sm:gap-2">
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="icon" className="w-10 h-10 sm:w-8 sm:h-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                        <Minus className="w-3 h-3" />
+                      </Button>
+                      <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                      <Button variant="outline" size="icon" className="w-10 h-10 sm:w-8 sm:h-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-destructive text-xs sm:hidden" onClick={() => removeItem(item.id)}>
+                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Rimuovi
                     </Button>
                   </div>
                 </CardContent>
@@ -184,9 +182,15 @@ export default function CarrelloPage() {
                 <span>Totale</span>
                 <span>€{total.toFixed(2)}</span>
               </div>
-              <Button className="w-full mt-4" onClick={placeOrder} disabled={ordering}>
-                {ordering ? "Ordine in corso..." : "Procedi all'ordine"}
-              </Button>
+              {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
+                <div className="mt-4">
+                  <CheckoutButton disabled={items.length === 0} />
+                </div>
+              ) : (
+                <Button className="w-full mt-4" onClick={placeOrder} disabled={ordering}>
+                  {ordering ? "Ordine in corso..." : "Procedi all'ordine"}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>

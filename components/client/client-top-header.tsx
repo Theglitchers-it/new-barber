@@ -1,27 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-import { Bell, Sun, Moon } from "lucide-react"
+import { Bell, Sun, Moon, LogOut } from "lucide-react"
+import { useNotifications } from "@/components/client/notification-provider"
 
 export function ClientTopHeader() {
-  const pathname = usePathname()
   const { data: session } = useSession()
   const { resolvedTheme, setTheme } = useTheme()
-  const [unreadCount, setUnreadCount] = useState(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch("/api/notifications?unread=true", { signal: controller.signal })
-      .then((r) => r.ok ? r.json() : { count: 0 })
-      .then((d) => setUnreadCount(d.count || 0))
-      .catch(() => {})
-    return () => controller.abort()
-  }, [pathname])
+  const { unreadCount } = useNotifications()
 
   const userName = session?.user?.name || "Cliente"
   const initial = userName[0]?.toUpperCase() || "C"
@@ -37,14 +26,16 @@ export function ClientTopHeader() {
         </span>
       </Link>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-xl w-9 h-9"
+          aria-label="Cambia tema"
+          className="rounded-xl w-9 h-9 relative"
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         >
-          {resolvedTheme === "dark" ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
+          <Sun className="w-4.5 h-4.5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute w-4.5 h-4.5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </Button>
         <Link href="/notifiche" className="relative">
           <Button variant="ghost" size="icon" className="rounded-xl w-9 h-9">
@@ -56,6 +47,14 @@ export function ClientTopHeader() {
             </span>
           )}
         </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-xl w-9 h-9 text-muted-foreground"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+        >
+          <LogOut className="w-4 h-4" />
+        </Button>
       </div>
     </header>
   )

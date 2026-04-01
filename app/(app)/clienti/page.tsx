@@ -101,14 +101,58 @@ export default async function ClientiPage({
       {/* Search */}
       <ClientiSearch defaultQuery={q || ""} currentSort={sortField} currentOrder={sortOrder} />
 
-      {/* Table */}
-      <Card className="glass border-0 shadow-lg">
+      {/* Mobile: Card layout */}
+      <div className="space-y-2 md:hidden">
+        {clients.length === 0 ? (
+          <Card className="glass border-0">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              {q ? "Nessun cliente trovato" : "Nessun cliente registrato"}
+            </CardContent>
+          </Card>
+        ) : (
+          clients.map((client) => (
+            <Link key={client.id} href={`/clienti/${client.id}`}>
+              <Card className="glass border-0 hover:bg-accent/5 transition-colors">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-10 h-10 border-2 border-primary/20 shrink-0">
+                      <AvatarFallback className="gradient-primary text-xs font-bold text-white">
+                        {client.name?.[0]?.toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{client.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{client.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-2 pl-[52px]">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{client._count.appointments}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Gift className="w-3 h-3 text-primary" />
+                      <span className="text-xs font-semibold text-primary">{client.loyaltyPoints} pt</span>
+                    </div>
+                    {client.phone && (
+                      <span className="text-xs text-muted-foreground ml-auto">{client.phone}</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))
+        )}
+      </div>
+
+      {/* Desktop: Table layout */}
+      <Card className="glass border-0 shadow-lg hidden md:block">
         <CardContent className="p-0 overflow-x-auto">
-          <Table className="min-w-[700px]">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Cliente</TableHead>
-                <TableHead className="hidden sm:table-cell">Telefono</TableHead>
+                <TableHead>Telefono</TableHead>
                 <TableHead className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
@@ -122,7 +166,7 @@ export default async function ClientiPage({
                     Punti
                   </div>
                 </TableHead>
-                <TableHead className="hidden md:table-cell">Registrato</TableHead>
+                <TableHead>Registrato</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -142,7 +186,7 @@ export default async function ClientiPage({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">
+                  <TableCell className="text-muted-foreground">
                     {client.phone || "—"}
                   </TableCell>
                   <TableCell className="text-center">
@@ -158,7 +202,7 @@ export default async function ClientiPage({
                   <TableCell className="text-center font-semibold text-primary">
                     {client.loyaltyPoints}
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                  <TableCell className="text-sm text-muted-foreground">
                     {new Date(client.createdAt).toLocaleDateString("it-IT")}
                   </TableCell>
                   <TableCell>

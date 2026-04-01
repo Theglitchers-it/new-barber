@@ -14,6 +14,7 @@ const profileSelect = {
   preferredContact: true,
   notes: true,
   loyaltyPoints: true,
+  birthDate: true,
 } as const
 
 export async function GET() {

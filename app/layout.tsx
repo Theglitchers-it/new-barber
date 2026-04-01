@@ -65,15 +65,18 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const { getServerLocale } = await import("@/lib/i18n/server")
+  const locale = await getServerLocale()
+
   return (
-    <html lang="it" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={`${geist.variable} ${geistMono.variable} ${plusJakarta.variable} font-sans antialiased`}>
-        <Providers>
+        <Providers locale={locale}>
           {children}
         </Providers>
         <Analytics />

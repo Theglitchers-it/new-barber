@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useCallback, useState } from "react"
+import Image from "next/image"
 import useEmblaCarousel from "embla-carousel-react"
 import { cn } from "@/lib/utils"
 
@@ -57,11 +58,12 @@ export function TrendingStylesCarousel() {
               className="flex-none basis-[45%] sm:basis-[35%] md:basis-[28%] pl-3"
             >
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
-                <img
+                <Image
                   src={`https://images.unsplash.com/${style.src}?w=400&h=530&fit=crop`}
                   alt={style.tag}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 640px) 45vw, (max-width: 768px) 35vw, 28vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                 <span className="absolute bottom-3 left-3 glass px-2.5 py-1 rounded-lg text-xs font-bold">

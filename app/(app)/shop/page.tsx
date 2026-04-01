@@ -2,6 +2,9 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ShopClient } from "./shop-client"
 
+export const metadata = { title: "Shop" }
+export const revalidate = 60
+
 export default async function ShopPage() {
   const session = await auth()
   const isLoggedIn = !!session?.user

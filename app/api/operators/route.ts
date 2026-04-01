@@ -50,7 +50,9 @@ export async function GET() {
     },
   }))
 
-  return NextResponse.json(operatorsWithStats)
+  return NextResponse.json(operatorsWithStats, {
+    headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" },
+  })
 }
 
 export async function POST(request: Request) {

@@ -152,7 +152,7 @@ export default function NuovaPrenotazionePage() {
             <div className="flex flex-col items-center">
               <div
                 className={cn(
-                  "w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
+                  "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
                   i < step && "bg-emerald-500 dark:bg-emerald-400 text-white shadow-md shadow-emerald-500/20",
                   i === step && "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20",
                   i > step && "bg-muted text-muted-foreground"
@@ -385,11 +385,11 @@ export default function NuovaPrenotazionePage() {
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4">
               <Button variant="outline" onClick={() => goBack(2)} className="rounded-xl">
                 <ChevronLeft className="w-4 h-4 mr-2" /> Indietro
               </Button>
-              <Button onClick={handleSubmit} disabled={loading} className="rounded-xl shadow-lg shadow-primary/20 active:animate-pop">
+              <Button onClick={handleSubmit} disabled={loading} className="rounded-xl shadow-lg shadow-primary/20 active:animate-pop w-full sm:w-auto min-h-[44px] btn-gradient">
                 {loading ? "Conferma in corso..." : "Conferma Prenotazione"}
               </Button>
             </div>
@@ -399,7 +399,7 @@ export default function NuovaPrenotazionePage() {
 
       {/* Sticky Summary Bar */}
       {step > 0 && (
-        <div className="sticky bottom-0 left-0 right-0 glass border-t border-border/40 p-3 -mx-4 md:-mx-6 px-4 md:px-6 animate-slide-up">
+        <div className="sticky bottom-0 z-10 glass border-t border-border/40 p-3 rounded-t-xl animate-slide-up">
           <div className="flex items-center gap-2 flex-wrap">
             {selectedService && (
               <Badge variant="secondary" className="animate-bounce-in gap-1">

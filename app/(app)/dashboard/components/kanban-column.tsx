@@ -42,7 +42,7 @@ export function KanbanColumn({ id, title, color, appointments }: KanbanColumnPro
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col rounded-xl border border-border/50 border-t-2 min-w-[220px] flex-1",
+        "flex flex-col rounded-xl border border-border/50 border-t-2 md:min-w-[260px] md:shrink-0 md:flex-1 md:snap-start",
         styles.border,
         styles.bg,
         isOver && "ring-2 ring-primary/20 bg-primary/5"
@@ -54,7 +54,7 @@ export function KanbanColumn({ id, title, color, appointments }: KanbanColumnPro
           {appointments.length}
         </span>
       </div>
-      <div className="flex-1 p-2 pt-0 space-y-1.5 max-h-[300px] overflow-y-auto scrollbar-thin">
+      <div className="flex-1 p-2 pt-0 space-y-1.5 md:max-h-[300px] md:overflow-y-auto md:scrollbar-thin">
         {appointments.length === 0 ? (
           <div className="text-center py-6 text-xs text-muted-foreground/50">
             Nessun appuntamento

@@ -32,6 +32,7 @@ export const profileUpdateSchema = z.object({
   hairType: z.string().max(50).optional(),
   preferredContact: z.string().max(50).optional(),
   notes: z.string().max(500).optional(),
+  birthDate: z.string().nullable().optional().transform((val) => (val ? new Date(val) : null)),
 })
 
 export const passwordChangeSchema = z.object({

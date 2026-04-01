@@ -13,10 +13,12 @@ import { StarRating } from "@/components/ui/star-rating"
 import { toast } from "sonner"
 import {
   ArrowLeft, AlertTriangle, StickyNote, Star, CalendarClock, Bell, Check,
-  Scissors, Clock, Euro, User, MapPin, Calendar, Play, Phone, Mail,
+  Scissors, Clock, Euro, User, Calendar, Play, Phone, Mail, Download, ExternalLink,
 } from "lucide-react"
 import Link from "next/link"
-import { appointmentStatusLabels as statusLabels, appointmentStatusColors as statusColors, APPOINTMENT_STATUS } from "@/lib/constants"
+import { appointmentStatusLabels as statusLabels, appointmentStatusColors as statusColors, APPOINTMENT_STATUS, paymentStatusLabels, paymentStatusColors, PAYMENT_STATUS } from "@/lib/constants"
+import { generateGoogleCalendarUrl } from "@/lib/ical"
+import { ChargeButton } from "@/components/stripe/charge-button"
 
 const cancellationReasons = [
   "Impegno personale",
@@ -40,6 +42,7 @@ type Appointment = {
   staffNotes: string | null
   deposit: number | null
   reminderSent: boolean
+  paymentStatus: string | null
   service: { id: string; name: string; duration: number }
   operator: { id: string; name: string; role: string }
   user: { name: string; email: string; phone: string | null }
@@ -277,6 +280,40 @@ export default function AppointmentDetailPage() {
         </CardContent>
       </Card>
 
+      {/* ═══════ CALENDAR + PAYMENT ═══════ */}
+      {appointment.status !== APPOINTMENT_STATUS.CANCELLED && (
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          <a
+            href={generateGoogleCalendarUrl({
+              date: appointment.date,
+              startTime: appointment.startTime,
+              endTime: appointment.endTime,
+              serviceName: appointment.service.name,
+              operatorName: appointment.operator.name,
+            })}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-xl">
+              <ExternalLink className="w-3.5 h-3.5" /> Google Calendar
+            </Button>
+          </a>
+          <a href={`/api/appointments/${appointment.id}/calendar`} download>
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-xl">
+              <Download className="w-3.5 h-3.5" /> Scarica .ics
+            </Button>
+          </a>
+          {appointment.paymentStatus && appointment.paymentStatus !== PAYMENT_STATUS.UNPAID && (
+            <Badge className={`${paymentStatusColors[appointment.paymentStatus]} border-0 text-xs`}>
+              {paymentStatusLabels[appointment.paymentStatus] || appointment.paymentStatus}
+            </Badge>
+          )}
+          {isAdmin && appointment.status === APPOINTMENT_STATUS.COMPLETED && appointment.paymentStatus !== PAYMENT_STATUS.PAID && (
+            <ChargeButton appointmentId={appointment.id} remaining={appointment.totalPrice - (appointment.deposit || 0)} />
+          )}
+        </div>
+      )}
+
       {/* ═══════ INFO GRID ═══════ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Operator card */}
@@ -354,22 +391,22 @@ export default function AppointmentDetailPage() {
               {isAdmin && appointment.status !== APPOINTMENT_STATUS.COMPLETED && appointment.status !== APPOINTMENT_STATUS.CANCELLED && (
                 <>
                   {appointment.status === APPOINTMENT_STATUS.PENDING && (
-                    <Button size="sm" onClick={() => updateStatus(APPOINTMENT_STATUS.CONFIRMED)} className="rounded-xl gap-1.5 bg-emerald-600 hover:bg-emerald-700">
+                    <Button size="sm" onClick={() => updateStatus(APPOINTMENT_STATUS.CONFIRMED)} className="rounded-xl gap-1.5 bg-emerald-600 hover:bg-emerald-700 min-h-[44px]">
                       <Check className="w-3.5 h-3.5" /> Conferma
                     </Button>
                   )}
                   {appointment.status === APPOINTMENT_STATUS.CONFIRMED && (
-                    <Button size="sm" onClick={() => updateStatus(APPOINTMENT_STATUS.IN_PROGRESS)} className="rounded-xl gap-1.5">
+                    <Button size="sm" onClick={() => updateStatus(APPOINTMENT_STATUS.IN_PROGRESS)} className="rounded-xl gap-1.5 min-h-[44px]">
                       <Play className="w-3.5 h-3.5" /> Avvia
                     </Button>
                   )}
                   {appointment.status === APPOINTMENT_STATUS.IN_PROGRESS && (
-                    <Button size="sm" onClick={() => updateStatus(APPOINTMENT_STATUS.COMPLETED)} className="rounded-xl gap-1.5 bg-emerald-600 hover:bg-emerald-700">
+                    <Button size="sm" onClick={() => updateStatus(APPOINTMENT_STATUS.COMPLETED)} className="rounded-xl gap-1.5 bg-emerald-600 hover:bg-emerald-700 min-h-[44px]">
                       <Check className="w-3.5 h-3.5" /> Completa
                     </Button>
                   )}
                   {!appointment.noShow && (
-                    <Button size="sm" variant="outline" onClick={handleNoShow} className="rounded-xl text-xs">
+                    <Button size="sm" variant="outline" onClick={handleNoShow} className="rounded-xl text-xs min-h-[44px]">
                       Segna No-Show
                     </Button>
                   )}
@@ -379,7 +416,7 @@ export default function AppointmentDetailPage() {
               {canCancel && (
                 <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" variant="destructive" className="rounded-xl">Cancella</Button>
+                    <Button size="sm" variant="destructive" className="rounded-xl min-h-[44px]">Cancella</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>

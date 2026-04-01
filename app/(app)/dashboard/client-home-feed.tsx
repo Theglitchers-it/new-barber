@@ -98,7 +98,7 @@ export async function ClientHomeFeed({ userId, userName }: { userId: string; use
         stock: true,
       },
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take: 4,
     }),
   ])
 
@@ -329,18 +329,23 @@ export async function ClientHomeFeed({ userId, userName }: { userId: string; use
 
       {/* Referral Promo Card */}
       <Link href="/referral" className="block">
-        <Card className="overflow-hidden border-0 hover-lift cursor-pointer">
-          <div className="gradient-primary p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-              <Gift className="w-5 h-5 text-white" />
+        <div className="relative rounded-2xl overflow-hidden p-5 hover-lift cursor-pointer bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20">
+          {/* Decorative blob */}
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-primary/10 blur-2xl" />
+          <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-primary/5 blur-xl" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+              <Gift className="w-6 h-6 text-white" />
             </div>
-            <div className="flex-1 text-white">
-              <p className="text-sm font-bold">Invita un amico, guadagna 100 punti!</p>
-              <p className="text-[10px] opacity-80">Condividi il tuo codice e ricevi punti bonus</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-heading font-bold">Invita un amico</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Guadagna <span className="font-bold text-primary">100 punti</span> per ogni invito</p>
             </div>
-            <ArrowRight className="w-4 h-4 text-white/70 shrink-0" />
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <ArrowRight className="w-4 h-4 text-primary" />
+            </div>
           </div>
-        </Card>
+        </div>
       </Link>
 
       {/* 4. Prodotti suggeriti */}

@@ -126,8 +126,8 @@ export function AiInsightsPanel({
                 <Icon
                   className={cn("w-4 h-4 mt-0.5 shrink-0", iconColorMap[insight.type])}
                 />
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm">{insight.text}</p>
+                <div className="flex-1 space-y-1 min-w-0">
+                  <p className="text-sm break-words">{insight.text}</p>
                   {insight.cta && (
                     <button className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
                       {insight.cta} &rarr;

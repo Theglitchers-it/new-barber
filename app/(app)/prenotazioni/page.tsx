@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import { PrenotazioniClient } from "./prenotazioni-client"
 import { USER_ROLE } from "@/lib/constants"
 
+export const metadata = { title: "Prenotazioni" }
+
 export default async function PrenotazioniPage() {
   const session = await auth()
   if (!session?.user) redirect("/login")

@@ -145,7 +145,7 @@ export function KanbanBoard({ appointments: initialAppointments }: KanbanBoardPr
           onDragEnd={handleDragEnd}
           onDragCancel={() => setActiveId(null)}
         >
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <div className="grid grid-cols-1 gap-3 md:flex md:gap-3 md:overflow-x-auto md:pb-2 md:no-scrollbar md:snap-x md:snap-mandatory">
             {columnData.map((col) => (
               <KanbanColumn
                 key={col.id}
